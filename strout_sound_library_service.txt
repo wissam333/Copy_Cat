@@ -1,0 +1,3 @@
+﻿58: return const LibraryResult.fail('لم يتم اختيار ملف');
+67: return const LibraryResult.fail('تعذّر قراءة الملف الصوتي');
+72: 'يجب أن يكون الصوت 2–6 ثوانٍ (هذا ${seconds.toStringAsFixed(1)} ث)');

@@ -1,0 +1,5 @@
+﻿34: throw StateError('الرابط مو صحيح — الصق رابط mp3 مباشر');
+38: 'لازم رابط ملف mp3 مباشر (يخلص بـ .mp3)، مو رابط صفحة');
+44: throw StateError('فشل التحميل (${res.statusCode})');
+47: throw StateError('الملف كبير زيادة');
+58: throw StateError('الملف كبير زيادة');
