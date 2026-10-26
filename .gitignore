@@ -36,6 +36,9 @@ migrate_working_dir/
 # Symbolication related
 app.*.symbols
 
+# Test/agent artifacts
+.playwright-mcp/
+
 # Obfuscation related
 app.*.map.json
 

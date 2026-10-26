@@ -8,6 +8,10 @@ accounts, no servers. One Wi-Fi or even just a hotspot, up to 5 phones.
 > واجهة اللعبة بالعربية بالكامل (RTL) — catch jokes, taunt with emoji, steal
 > the crown. Everything else in this README is in English for the code side.
 
+**Try the judge in your browser** 🎤 — [live demo page](https://wissam333.github.io/Copy_Cat/)
+(record or upload two clips and see the exact four-axis verdict; runs entirely
+client-side, no audio leaves the page). Source under [`demo/`](demo/).
+
 ---
 
 ## How it plays
