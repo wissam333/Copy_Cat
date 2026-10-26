@@ -1,0 +1,51 @@
+{
+  "name": "voice-mimic-score",
+  "version": "0.1.0",
+  "description": "Score how closely one voice recording mimics another (pitch, rhythm, timbre, energy). Browser + Node, zero runtime dependencies.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "vite demo --open",
+    "build:demo": "vite build demo",
+    "preview:demo": "vite preview demo",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "voice",
+    "mimic",
+    "imitation",
+    "singing",
+    "pitch",
+    "yin",
+    "autocorrelation",
+    "dtw",
+    "mfcc",
+    "scoring",
+    "audio"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

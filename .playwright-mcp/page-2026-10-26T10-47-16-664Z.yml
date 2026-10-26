@@ -1,0 +1,60 @@
+- main [ref=f5e2]:
+  - generic [ref=f5e3]:
+    - heading "🎭 Mimic Party Judge" [level=1] [ref=f5e4]
+    - paragraph [ref=f5e5]:
+      - text: Record a target, then record — or upload — your imitation. Everything is computed inside your browser; no audio ever leaves this page. This is the exact scoring engine of the game
+      - link "Mimic Party" [ref=f5e6] [cursor=pointer]:
+        - /url: https://github.com/wissam333/Copy_Cat
+      - text: — a 1:1 port of the Dart original, parity-tested to produce identical numbers.
+  - generic [ref=f5e7]:
+    - generic [ref=f5e8]:
+      - heading "1 · Target clip the original sound" [level=2] [ref=f5e9]
+      - generic [ref=f5e11]:
+        - button "● Record" [ref=f5e12] [cursor=pointer]
+        - generic [ref=f5e13] [cursor=pointer]: ⬆️ Upload file
+        - button "▶" [disabled] [ref=f5e14]
+        - generic [ref=f5e15]: Not loaded yet
+    - generic [ref=f5e16]:
+      - heading "2 · Your imitation your mimic" [level=2] [ref=f5e17]
+      - generic [ref=f5e19]:
+        - button "● Record" [ref=f5e20] [cursor=pointer]
+        - generic [ref=f5e21] [cursor=pointer]: ⬆️ Upload file
+        - button "▶" [disabled] [ref=f5e22]
+        - generic [ref=f5e23]: Not loaded yet
+  - button "⚖️ Judge now" [disabled] [ref=f5e24]
+  - group [ref=f5e25]:
+    - generic "⚙️ Engine options — tune the score live" [ref=f5e26] [cursor=pointer]
+  - generic [ref=f5e27]:
+    - heading "How a take is graded" [level=3] [ref=f5e28]
+    - table [ref=f5e29]:
+      - rowgroup [ref=f5e30]:
+        - row [ref=f5e31]:
+          - columnheader "Axis ↓ / Target kind →" [ref=f5e32]
+          - columnheader "Melody" [ref=f5e33]
+          - columnheader "Timbre" [ref=f5e34]
+          - columnheader "Energy" [ref=f5e35]
+          - columnheader "Rhythm" [ref=f5e36]
+        - row [ref=f5e37]:
+          - cell "Tonal (singing)" [ref=f5e38]
+          - cell "0.30" [ref=f5e39]
+          - cell "0.20" [ref=f5e40]
+          - cell "0.20" [ref=f5e41]
+          - cell "0.30" [ref=f5e42]
+        - row [ref=f5e43]:
+          - cell "Speech" [ref=f5e44]
+          - cell "0.25" [ref=f5e45]
+          - cell "0.35" [ref=f5e46]
+          - cell "0.20" [ref=f5e47]
+          - cell "0.20" [ref=f5e48]
+        - row [ref=f5e49]:
+          - cell "Noise (claps, laughs)" [ref=f5e50]
+          - cell "—" [ref=f5e51]
+          - cell "0.40" [ref=f5e52]
+          - cell "0.35" [ref=f5e53]
+          - cell "0.25" [ref=f5e54]
+    - paragraph [ref=f5e55]: "Melody: the shape of your pitch contour in cents (median-centered, so singing in another key still scores), aligned by DTW. Timbre: an MFCC voice-fingerprint matched with DTW. Energy: the loud/quiet shape. Rhythm: when you paused and where you burst. Guardrails: a load-bearing axis below 15 caps the total at 45, and silence always scores 0."
+  - generic [ref=f5e56]:
+    - text: The judge from the game
+    - link "wissam333/Copy_Cat" [ref=f5e57] [cursor=pointer]:
+      - /url: https://github.com/wissam333/Copy_Cat
+    - text: · MIT · no audio ever leaves this page

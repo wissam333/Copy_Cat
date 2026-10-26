@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:," />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mimic Party Judge — try the scoring engine</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg1: #17092b;
+        --bg2: #2e1065;
+        --card: rgba(255, 255, 255, 0.045);
+        --card-line: rgba(167, 139, 250, 0.22);
+        --amber: #f59e0b;
+        --purple: #a78bfa;
+        --green: #4ade80;
+        --red: #ef4444;
+        --text: #f3eefc;
+        --muted: #b9a8d8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(1100px 500px at 85% -10%, rgba(109, 40, 217, 0.45), transparent 60%),
+          radial-gradient(900px 420px at 5% 110%, rgba(88, 28, 135, 0.5), transparent 55%),
+          linear-gradient(160deg, var(--bg1), var(--bg2) 70%);
+        background-attachment: fixed;
+        color: var(--text);
+        font: 15px/1.6 system-ui, 'Segoe UI', Tahoma, Roboto, sans-serif;
+      }
+      main { max-width: 920px; margin: 0 auto; padding: 34px 20px 70px; }
+      .hero h1 { font-size: 30px; margin: 0 0 2px; letter-spacing: 0.5px; }
+      .hero h1 b { color: var(--amber); }
+      .hero .sub { color: var(--muted); margin: 0 0 26px; font-size: 14px; max-width: 70ch; }
+      .hero .sub a { color: var(--purple); text-decoration: none; }
+      .hero .sub a:hover { text-decoration: underline; }
+
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--card-line);
+        border-radius: 16px;
+        padding: 16px;
+        backdrop-filter: blur(6px);
+      }
+      .card h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+      .card h2 .tag { color: var(--muted); font-weight: 400; font-size: 12px; }
+      canvas { width: 100%; height: 76px; display: block; margin: 10px 0 4px; }
+      #contourCv { height: 150px; }
+
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .hint { color: var(--muted); font-size: 12.5px; min-height: 18px; flex: 1 1 auto; }
+
+      button, .uplab {
+        font: inherit;
+        border: 1px solid var(--card-line);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 7px 13px;
+        cursor: pointer;
+        user-select: none;
+      }
+      button:hover:not(:disabled), .uplab:hover { border-color: var(--purple); }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      button.rec { border-color: rgba(239, 68, 68, 0.55); background: rgba(239, 68, 68, 0.12); }
+      button.rec.on { background: var(--red); color: #fff; border-color: var(--red); }
+      .uplab { display: inline-block; }
+
+      #scoreBtn {
+        display: block;
+        margin: 22px auto 28px;
+        padding: 13px 46px;
+        font-size: 17px;
+        font-weight: 800;
+        color: #2b1608;
+        background: linear-gradient(180deg, #fbbf24, var(--amber));
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 6px 22px rgba(245, 158, 11, 0.35);
+      }
+      #scoreBtn:disabled { box-shadow: none; }
+
+      #result { display: none; }
+      #result.show { display: block; }
+      .result-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+      .total { font-size: 62px; font-weight: 800; line-height: 1; color: var(--amber); }
+      .total small { font-size: 18px; color: var(--muted); font-weight: 400; }
+      .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip {
+        font-size: 12.5px;
+        border: 1px solid var(--card-line);
+        border-radius: 999px;
+        padding: 3px 11px;
+        color: var(--muted);
+      }
+      .chip b { color: var(--text); }
+
+      .meters { margin-top: 16px; display: grid; gap: 9px; }
+      .meter { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+      .meter .name { font-size: 14px; font-weight: 700; }
+      .track { height: 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+      .fill { height: 100%; width: 0%; border-radius: 999px; transition: width 0.5s ease; background: var(--amber); }
+      .fill.hi { background: var(--green); }
+      .fill.lo { background: var(--red); }
+
+      .note { color: var(--amber); margin-top: 12px; font-size: 14px; }
+
+      details {
+        margin-top: 30px;
+        border: 1px solid var(--card-line);
+        border-radius: 16px;
+        padding: 0 16px;
+        background: var(--card);
+      }
+      details summary { cursor: pointer; padding: 14px 0; font-weight: 700; }
+      .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; padding-bottom: 14px; }
+      .opts label { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--muted); }
+      .opts input[type='number'] {
+        font: inherit;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--card-line);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 6px 8px;
+      }
+      .opts-actions { display: flex; gap: 8px; padding-bottom: 16px; }
+
+      .howto { margin-top: 30px; }
+      .howto h3 { font-size: 16px; margin: 0 0 10px; }
+      .howto h3 span { color: var(--muted); font-size: 12px; font-weight: 400; }
+      table.w { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+      table.w th, table.w td { border: 1px solid var(--card-line); padding: 7px 12px; text-align: center; }
+      table.w th { color: var(--muted); font-weight: 600; font-size: 12px; }
+      table.w td:first-child { font-weight: 700; }
+      .howto p { color: var(--muted); font-size: 13.5px; }
+
+      footer {
+        margin-top: 34px;
+        padding-top: 16px;
+        border-top: 1px solid var(--card-line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      footer a { color: var(--purple); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <h1>🎭 Mimic Party <b>Judge</b></h1>
+        <p class="sub">
+          Record a target, then record — or upload — your imitation. Everything is computed inside
+          your browser; no audio ever leaves this page. This is the exact scoring engine of the game
+          <a href="https://github.com/wissam333/Copy_Cat" target="_blank">Mimic Party</a>
+          — a 1:1 port of the Dart original, parity-tested to produce identical numbers.
+        </p>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h2>1 · Target clip <span class="tag">the original sound</span></h2>
+          <canvas id="targetWave"></canvas>
+          <div class="row">
+            <button id="targetRec" class="rec">● Record</button>
+            <label class="uplab" for="targetFile">⬆️ Upload file</label>
+            <input type="file" id="targetFile" accept="audio/*" style="display: none" />
+            <button id="targetPlay" disabled>▶</button>
+            <span class="hint" id="targetHint">Not loaded yet</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>2 · Your imitation <span class="tag">your mimic</span></h2>
+          <canvas id="attemptWave"></canvas>
+          <div class="row">
+            <button id="attemptRec" class="rec">● Record</button>
+            <label class="uplab" for="attemptFile">⬆️ Upload file</label>
+            <input type="file" id="attemptFile" accept="audio/*" style="display: none" />
+            <button id="attemptPlay" disabled>▶</button>
+            <span class="hint" id="attemptHint">Not loaded yet</span>
+          </div>
+        </div>
+      </section>
+
+      <button id="scoreBtn" disabled>⚖️ Judge now</button>
+
+      <section id="result" class="card">
+        <div class="result-head">
+          <div class="total"><span id="total">0</span><small> / 100</small></div>
+          <div class="chips">
+            <span class="chip">Target kind: <b id="kind">—</b></span>
+            <span class="chip">Voiced: <b id="voiced">0%</b></span>
+          </div>
+        </div>
+        <div class="meters" id="meters"></div>
+        <canvas id="contourCv"></canvas>
+        <div class="hint" id="contourHint">Purple = target pitch · Amber = your pitch · matched an octave away → forgiven with a penalty</div>
+        <div class="note" id="note"></div>
+      </section>
+
+      <details>
+        <summary>⚙️ Engine options — tune the score live</summary>
+        <div class="opts" id="opts"></div>
+        <div class="opts-actions">
+          <button id="resetOpts">Reset to defaults</button>
+          <button id="copyOpts">Copy current options JSON</button>
+        </div>
+      </details>
+
+      <section class="howto card">
+        <h3>How a take is graded</h3>
+        <table class="w">
+          <tr><th>Axis ↓ / Target kind →</th><th>Melody</th><th>Timbre</th><th>Energy</th><th>Rhythm</th></tr>
+          <tr><td>Tonal (singing)</td><td>0.30</td><td>0.20</td><td>0.20</td><td>0.30</td></tr>
+          <tr><td>Speech</td><td>0.25</td><td>0.35</td><td>0.20</td><td>0.20</td></tr>
+          <tr><td>Noise (claps, laughs)</td><td>—</td><td>0.40</td><td>0.35</td><td>0.25</td></tr>
+        </table>
+        <p>
+          <b>Melody</b>: the shape of your pitch contour in cents (median-centered, so singing in
+          another key still scores), aligned by DTW.
+          <b>Timbre</b>: an MFCC voice-fingerprint matched with DTW.
+          <b>Energy</b>: the loud/quiet shape.
+          <b>Rhythm</b>: when you paused and where you burst.
+          Guardrails: a load-bearing axis below 15 caps the total at 45, and silence always scores 0.
+        </p>
+      </section>
+
+      <footer>
+        The judge from the game
+        <a href="https://github.com/wissam333/Copy_Cat" target="_blank">wissam333/Copy_Cat</a>
+        · MIT · no audio ever leaves this page
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
