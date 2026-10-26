@@ -13,6 +13,7 @@ import '../services/lan_socket_manager.dart';
 import '../services/pitch_extractor.dart';
 import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart';
+import '../i18n.dart';
 import 'coins.dart';
 import 'game_state.dart';
 import 'shop_store.dart';
@@ -295,7 +296,7 @@ class ClientEngine {
         path,
         GameSound(
           id: soundId,
-          title: (manifest['title'] ?? 'تحدي').toString(),
+          title: (manifest['title'] ?? t('تحدي')).toString(),
           filePath: path,
           durationSeconds:
               ((manifest['durationSeconds'] as num?) ?? 4).toDouble(),

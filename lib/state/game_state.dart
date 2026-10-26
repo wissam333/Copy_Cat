@@ -11,6 +11,8 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../i18n.dart';
+
 import '../models/game_sound.dart';
 import '../models/player.dart';
 import '../services/audio_io_service.dart';
@@ -236,12 +238,12 @@ class GameController extends Notifier<GameData> {
 
   @override
   GameData build() => GameData(
-        playerName: IdentityStore.initialName ?? 'لاعب 1',
-        roomName: IdentityStore.initialRoom ?? 'غرفة التقليد',
+        playerName: IdentityStore.initialName ?? t('لاعب 1'),
+        roomName: IdentityStore.initialRoom ?? t('غرفة التقليد'),
       );
 
   void setName(String v) {
-    final name = v.trim().isEmpty ? 'لاعب 1' : _clip(v);
+    final name = v.trim().isEmpty ? t('لاعب 1') : _clip(v);
     unawaited(IdentityStore.saveName(name));
     if (state.players.isEmpty) {
       state = state.copyWith(playerName: name);
@@ -259,7 +261,7 @@ class GameController extends Notifier<GameData> {
   }
 
   void setRoom(String v) {
-    final room = v.trim().isEmpty ? 'غرفة التقليد' : v.trim();
+    final room = v.trim().isEmpty ? t('غرفة التقليد') : v.trim();
     unawaited(IdentityStore.saveRoom(room));
     state = state.copyWith(roomName: room);
   }
@@ -286,8 +288,8 @@ class GameController extends Notifier<GameData> {
       players: players,
       isRoomLocked: true,
       connectionStatus: state.isHost
-          ? 'يستضيف “${state.roomName}” — الغرفة مقفلة'
-          : 'انضممت إلى الغرفة — بدأت اللعبة (مقفلة)',
+          ? t('يستضيف "{n}" — الغرفة مقفلة', {'n': state.roomName})
+          : t('انضممت إلى الغرفة — بدأت اللعبة (مقفلة)'),
     );
   }
 
@@ -334,7 +336,7 @@ class GameController extends Notifier<GameData> {
     ensureSoloPlayer();
     if (state.players.length >= 5) return;
     final n = name.trim().isEmpty
-        ? 'لاعب ${state.players.length + 1}'
+        ? t('لاعب {n}', {'n': state.players.length + 1})
         : _clip(name);
     state = state.copyWith(players: [
       ...state.players,
@@ -412,7 +414,7 @@ class GameController extends Notifier<GameData> {
       playerId: me.id,
       playerName: me.name,
       soundId: sound?.id ?? '',
-      soundTitle: sound?.title ?? 'تحدي',
+      soundTitle: sound?.title ?? t('تحدي'),
       roundIndex: state.roundIndex,
       score: finalScore,
       melody: melody,

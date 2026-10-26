@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -65,9 +67,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'قلّد الصوت… واجمع النقاط!',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+              Text(
+                t('قلّد الصوت… واجمع النقاط!'),
+                style: const TextStyle(fontSize: 18, color: Colors.white),
               ),
               const SizedBox(height: 32),
               const SizedBox(

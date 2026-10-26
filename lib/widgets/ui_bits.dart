@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/celebration.dart';
+import '../i18n.dart';
 import '../services/sfx.dart';
 import '../state/coins.dart';
 import '../state/game_state.dart';
@@ -14,13 +15,13 @@ import 'avatar_view.dart';
 
 /// How a round score should feel out loud.
 String scoreLabel(double score) {
-  if (score >= 95) return 'نسخة طبق الأصل!';
-  if (score >= 85) return 'أسطورة التقليد';
-  if (score >= 70) return 'تقليد قوي';
-  if (score >= 55) return 'قريب نوعًا ما';
-  if (score >= 35) return 'به شبه';
-  if (score > 0) return 'بعيد… حاول الاقتراب أكثر';
-  return 'لم نلتقط صوتك';
+  if (score >= 95) return t('نسخة طبق الأصل!');
+  if (score >= 85) return t('أسطورة التقليد');
+  if (score >= 70) return t('تقليد قوي');
+  if (score >= 55) return t('قريب نوعًا ما');
+  if (score >= 35) return t('به شبه');
+  if (score > 0) return t('بعيد… حاول الاقتراب أكثر');
+  return t('لم نلتقط صوتك');
 }
 
 Color scoreColor(double score) {
@@ -181,7 +182,7 @@ class CountdownView extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(caption,
+        Text(t(caption),
             textAlign: TextAlign.center,
             style: TextStyle(color: color, fontSize: 18)),
         const SizedBox(height: 16),
@@ -261,11 +262,11 @@ class ModeCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(mode.title,
+                    Text(t(mode.title),
                         style: const TextStyle(
                             fontSize: 17, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
-                    Text(mode.blurb,
+                    Text(t(mode.blurb),
                         style: const TextStyle(fontSize: 13, height: 1.35)),
                   ],
                 ),
@@ -296,7 +297,7 @@ class ScoreRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = points
-        ? '${score.toStringAsFixed(0)} نقطة'
+        ? t('{n} نقطة', {'n': score.toStringAsFixed(0)})
         : '${score.toStringAsFixed(0)}/100';
     return ListTile(
       leading: Icon(winner ? Icons.emoji_events : Icons.person,

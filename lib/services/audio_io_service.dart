@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../i18n.dart';
+
 import 'native_audio.dart';
 
 class AudioIoService {
@@ -24,7 +26,7 @@ class AudioIoService {
   /// Records a WAV file at [path] for [recordFor]; returns stopped path.
   Future<String?> recordWav(String path, Duration recordFor) async {
     final ok = await ensureMicPermission();
-    if (!ok) throw StateError('تم رفض إذن الميكروفون');
+    if (!ok) throw StateError(t('تم رفض إذن الميكروفون'));
     const config = RecordConfig(
       encoder: AudioEncoder.wav,
       sampleRate: 44100,

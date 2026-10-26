@@ -8,6 +8,8 @@
 // (red < 50, amber 50–79, green ≥ 80). No numbers, no weights.
 import 'package:flutter/material.dart';
 
+import '../i18n.dart';
+
 class _AxisRow {
   final String label;
   final double value;
@@ -85,7 +87,7 @@ class RevealMeters extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(caption,
+          Text(t(caption),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.amber, fontSize: 12)),
           const SizedBox(height: 2),
@@ -113,7 +115,7 @@ class _MeterRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 96,
-            child: Text(row.label,
+            child: Text(t(row.label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
 import '../state/game_state.dart';
 import '../state/host_engine.dart';
 import '../state/shop_store.dart';
@@ -38,7 +39,7 @@ class ResultsScreen extends ConsumerWidget {
         ranked.where((e) => top > 0 && e.value == top).toList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('نهاية الحفلة'),
+        title: Text(t('نهاية الحفلة')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
@@ -52,15 +53,15 @@ class ResultsScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(PartyModeView.of(match.mode).title,
+            Text(t(PartyModeView.of(match.mode).title),
                 style:
                     const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             if (ranked.isEmpty)
-              const Card(
+              Card(
                 child: ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('لا نتائج بعد.'),
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(t('لا نتائج بعد.')),
                 ),
               )
             else ...[
@@ -109,17 +110,23 @@ class ResultsScreen extends ConsumerWidget {
                   leading: const Icon(Icons.emoji_events, size: 36),
                   title: Text(
                     winners.length == 1
-                        ? 'الفائز: ${nameOf(winners.first.key)}'
-                        : 'تعادل: ${winners.map((e) => nameOf(e.key)).join(' و ')}',
+                        ? t('الفائز: {n}',
+                            {'n': nameOf(winners.first.key)})
+                        : t('تعادل: {n}', {
+                            'n': winners
+                                .map((e) => nameOf(e.key))
+                                .join(t('و'))
+                          }),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('${top.round()} نقطة'),
+                  subtitle:
+                      Text(t('{n} نقطة', {'n': top.round()})),
                 ),
               ),
             ],
-            const SectionTitle('الترتيب'),
-            const Text('عملاتك تفتح شخصيات المتجر — بالتوفيق',
-                style: TextStyle(fontSize: 12)),
+            SectionTitle(t('الترتيب')),
+            Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
+                style: const TextStyle(fontSize: 12)),
             for (final e in ranked)
               // 🛡️ badge: a shielded player's total already excludes their
               // worst round — named so the sum mismatch is explainable.
@@ -131,9 +138,9 @@ class ResultsScreen extends ConsumerWidget {
                 winner: top > 0 && e.value == top,
                 points: true,
               ),
-            if (match.roundsTotal > 0) const SectionTitle('الجولات'),
+            if (match.roundsTotal > 0) SectionTitle(t('الجولات')),
             for (var r = 0; r < match.roundsTotal; r++) ...[
-              Text('الجولة ${r + 1}',
+              Text(t('الجولة {n}', {'n': r + 1}),
                   style:
                       const TextStyle(fontWeight: FontWeight.w700)),
               for (final p in match.order)
@@ -148,7 +155,7 @@ class ResultsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             if (match.iAmHost)
               AppButton(
-                label: 'نفس الحفلة',
+                label: t('نفس الحفلة'),
                 icon: Icons.replay,
                 onPressed: () async {
                   final err = await ref
@@ -162,15 +169,15 @@ class ResultsScreen extends ConsumerWidget {
                 },
               )
             else
-              const Card(
+              Card(
                 child: ListTile(
-                  leading: Icon(Icons.hourglass_empty),
-                  title: Text('انتظر حتى يبدأ المضيف حفلة جديدة'),
+                  leading: const Icon(Icons.hourglass_empty),
+                  title: Text(t('انتظر حتى يبدأ المضيف حفلة جديدة')),
                 ),
               ),
             const SizedBox(height: 8),
             AppButton(
-              label: 'الرئيسية',
+              label: t('الرئيسية'),
               icon: Icons.home,
               primary: false,
               onPressed: () => context.go('/home'),
@@ -194,7 +201,7 @@ class ResultsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('نهاية الحفلة'),
+        title: Text(t('نهاية الحفلة')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
@@ -208,14 +215,14 @@ class ResultsScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text('اللعب بموبايل واحد',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(t('اللعب بموبايل واحد'),
+                style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             if (ranked.isEmpty || game.attempts.isEmpty)
-              const Card(
+              Card(
                 child: ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('لا نتائج بعد — العب دورًا أولًا.'),
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(t('لا نتائج بعد — العب دورًا أولًا.')),
                 ),
               )
             else ...[
@@ -234,16 +241,18 @@ class ResultsScreen extends ConsumerWidget {
                   leading: const Icon(Icons.emoji_events, size: 36),
                   title: Text(
                     winners.length == 1
-                        ? 'الفائز: ${winners.first.name}'
-                        : 'تعادل: ${winners.map((p) => p.name).join(' و ')}',
+                        ? t('الفائز: {n}', {'n': winners.first.name})
+                        : t('تعادل: {n}', {
+                            'n': winners.map((p) => p.name).join(t('و'))
+                          }),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('$top نقطة'),
+                  subtitle: Text(t('{n} نقطة', {'n': top})),
                 ),
               ),
               const SizedBox(height: 8),
               AppButton(
-                label: 'تشغيل أفضل محاولة',
+                label: t('تشغيل أفضل محاولة'),
                 icon: Icons.play_arrow,
                 primary: false,
                 onPressed: best?.path == null
@@ -254,19 +263,21 @@ class ResultsScreen extends ConsumerWidget {
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('فشل التشغيل: $e')),
+                              SnackBar(
+                                  content: Text(t('فشل التشغيل: {n}',
+                                      {'n': e}))),
                             );
                           }
                         }
                       },
               ),
             ],
-            const SectionTitle('الترتيب'),
+            SectionTitle(t('الترتيب')),
             if (ranked.isEmpty)
-              const Text('لا يوجد.')
+              Text(t('لا يوجد.'))
             else ...[
-              const Text('عملاتك تفتح شخصيات المتجر — بالتوفيق',
-                  style: TextStyle(fontSize: 12)),
+              Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
+                  style: const TextStyle(fontSize: 12)),
               for (final p in ranked)
                 ScoreRow(
                   name: p.name,
@@ -275,10 +286,13 @@ class ResultsScreen extends ConsumerWidget {
                   points: true,
                 ),
             ],
-            if (rounds.isNotEmpty) const SectionTitle('الجولات'),
+            if (rounds.isNotEmpty) SectionTitle(t('الجولات')),
             for (final round in rounds) ...[
               Text(
-                'الجولة ${round + 1} · ${game.attemptsForRound(round).first.soundTitle}',
+                t('الجولة {n} · {title}', {
+                  'n': round + 1,
+                  'title': game.attemptsForRound(round).first.soundTitle,
+                }),
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               for (final a in ([...game.attemptsForRound(round)]
@@ -288,13 +302,13 @@ class ResultsScreen extends ConsumerWidget {
             ],
             const SizedBox(height: 8),
             AppButton(
-              label: 'العب مجددًا',
+              label: t('العب مجددًا'),
               icon: Icons.replay,
               onPressed: () => context.go('/game?solo=1'),
             ),
             const SizedBox(height: 8),
             AppButton(
-              label: 'الرئيسية',
+              label: t('الرئيسية'),
               icon: Icons.home,
               primary: false,
               onPressed: () => context.go('/home'),

@@ -1,6 +1,7 @@
 // Minimal checks only (tester is the user on their phone).
 import 'package:copy_cat/main.dart';
 import 'package:copy_cat/services/audio_scorer.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -34,7 +35,9 @@ void main() {
   });
 
   testWidgets('app launches to Copy Cat splash', (tester) async {
-    await tester.pumpWidget(const MimicPartyApp());
+    // MimicPartyApp is a ConsumerWidget (language/locale wiring) — the
+    // scope main() normally provides must be in the pump too.
+    await tester.pumpWidget(const ProviderScope(child: MimicPartyApp()));
     await tester.pump();
     expect(find.text('Copy Cat'), findsOneWidget);
   });

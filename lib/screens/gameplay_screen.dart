@@ -19,6 +19,8 @@ import '../services/pitch_extractor.dart';
 import '../services/sfx.dart';
 import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart' show turnNoteLabel;
+
+import '../i18n.dart';
 import '../state/client_engine.dart';
 import '../state/coins.dart';
 import '../state/game_state.dart';
@@ -59,7 +61,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
   double _secondsLeft = 0;
   double _playProgress = 0;
   double _voicedPct = 0;
-  String _status = 'نجهّز الحفلة…';
+  String _status = t('نجهّز الحفلة…');
   List<double> _wave = const [];
   List<double> _live = const [];
   List<double> _attemptWave = const [];
@@ -131,7 +133,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         setState(() {
           _noSounds = true;
           _booting = false;
-          _status = 'لا توجد أصوات بعد — أضف صوتًا من المكتبة.';
+          _status = t('لا توجد أصوات بعد — أضف صوتًا من المكتبة.');
         });
         return;
       }
@@ -160,7 +162,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       if (mounted) {
         setState(() {
           _booting = false;
-          _status = 'تعذّر بدء الحفلة. حاول مرة أخرى.';
+          _status = t('تعذّر بدء الحفلة. حاول مرة أخرى.');
         });
       }
     } finally {
@@ -191,7 +193,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     try {
       final challenge = ref.read(gameProvider).challenge;
       if (challenge == null) {
-        _finish(gen, serial, 0, 0, 0, false, status: 'لا يوجد صوت لهذا الدور');
+        _finish(gen, serial, 0, 0, 0, false, status: t('لا يوجد صوت لهذا الدور'));
         return;
       }
       // Manual start: the player taps ابدأ الاستماع, then listen → 3 s
@@ -222,13 +224,13 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       ref.read(lanProvider).startTurn15SecTimeout(() {
         unawaited(ref.read(audioIoProvider).cancelRecording());
         unawaited(ref.read(audioIoProvider).stopPlayback());
-        _finish(gen, serial, 0, 0, 0, false, status: 'انتهى الوقت — 0');
+        _finish(gen, serial, 0, 0, 0, false, status: t('انتهى الوقت — 0'));
       }, budget: budget);
 
       ctl.setPhase(TurnPhase.listening);
       if (mounted) {
         setState(() {
-          _status = 'استمع… يُشغَّل مرة واحدة';
+          _status = t('استمع… يُشغَّل مرة واحدة');
           _playProgress = 0;
           _scoring = false;
           _live = const [];
@@ -260,7 +262,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           (challenge.durationSeconds * 1000).round().clamp(2000, 6000);
       if (mounted) {
         setState(() {
-          _status = 'قلّد الآن!';
+          _status = t('قلّد الآن!');
           _live = const [];
           _secondsLeft = totalMs / 1000;
         });
@@ -307,7 +309,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         _voicedPct = scored.voicedPct;
         _attemptWave = scored.attemptWave;
         _status = silentTake
-            ? 'لم نسمع شيئًا — 0'
+            ? t('لم نسمع شيئًا — 0')
             : '${scored.verdict.total.toStringAsFixed(0)}/100';
       });
       try {
@@ -328,7 +330,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       );
     } catch (_) {
       _finish(gen, serial, 0, 0, 0, false,
-          status: 'تعذّر إكمال الدور — النتيجة 0');
+          status: t('تعذّر إكمال الدور — النتيجة 0'));
     } finally {
       _running = false;
       _progressTimer?.cancel();
@@ -388,9 +390,9 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
   }
 
   String _readyLine(int seconds) => switch (seconds) {
-        3 => 'جهّز صوتك',
-        2 => 'اقترب',
-        _ => 'هيّا!',
+        3 => t('جهّز صوتك'),
+        2 => t('اقترب'),
+        _ => t('هيّا!'),
       };
 
   void _togglePick(GameSound sound, {required bool multi}) {
@@ -433,18 +435,18 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('هل تريد المغادرة؟'),
+        title: Text(t('هل تريد المغادرة؟')),
         content: Text(match.iAmHost
-            ? 'مغادرة المضيف تنهي الحفلة للجميع.'
-            : 'ستغادر الغرفة وستكمل اللعبة بدونك.'),
+            ? t('مغادرة المضيف تنهي الحفلة للجميع.')
+            : t('ستغادر الغرفة وستكمل اللعبة بدونك.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('البقاء'),
+            child: Text(t('البقاء')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('مغادرة'),
+            child: Text(t('مغادرة')),
           ),
         ],
       ),
@@ -479,8 +481,9 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
 
   Widget _lanTotals(LanMatchData match) {
     final round = match.roundsTotal > 0
-        ? 'الجولة ${match.roundIndex + 1} من ${match.roundsTotal}'
-        : 'نجهّز…';
+        ? t('الجولة {a} من {b}',
+            {'a': match.roundIndex + 1, 'b': match.roundsTotal})
+        : t('نجهّز…');
     final inv = ref.watch(shopProvider).inventory;
     final waiting = match.activePlayerId != null &&
         match.activePlayerId != match.selfId;
@@ -504,7 +507,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               emoji: ShopCatalogPowerUps.byId('volt').emoji,
               stock: inv['volt'] ?? 0,
               enabled: waiting,
-              tooltip: 'برق — يعيد دور اللاعب الحالي مرة واحدة',
+              tooltip: t('برق — يعيد دور اللاعب الحالي مرة واحدة'),
               onTap: () => fire('volt'),
             ),
             const SizedBox(width: 6),
@@ -512,7 +515,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               emoji: ShopCatalogPowerUps.byId('shield').emoji,
               stock: inv['shield'] ?? 0,
               enabled: true,
-              tooltip: 'درع — يحذف أسوأ جولة من المجموع النهائي',
+              tooltip: t('درع — يحذف أسوأ جولة من المجموع النهائي'),
               onTap: () => fire('shield'),
             ),
             const Spacer(),
@@ -524,7 +527,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             if ((match.soundTitle ?? '').isNotEmpty)
               Flexible(
                 child: Text(
-                  '“${match.soundTitle}”',
+                  t('“{n}”', {'n': t(match.soundTitle!)}),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -567,7 +570,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       BuildContext context, WidgetRef ref, LanMatchData match) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(PartyModeView.of(match.mode).title),
+        title: Text(t(PartyModeView.of(match.mode).title)),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: _confirmLeave,
@@ -627,8 +630,8 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     if (!match.active) {
       return _Blocked(
         icon: Icons.wifi_off,
-        text: 'لا توجد مباراة نشطة.',
-        action: 'الرئيسية',
+        text: t('لا توجد مباراة نشطة.'),
+        action: t('الرئيسية'),
         onPressed: () => context.go('/home'),
       );
     }
@@ -639,13 +642,13 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('اختر التحدي',
-                  style: TextStyle(
+              Text(t('اختر التحدي'),
+                  style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800)),
               const SizedBox(height: 6),
-              const Text(
-                  'استمع قبل التثبيت. لن يسمع الباقون معاينتك.',
-                  style: TextStyle(height: 1.35)),
+              Text(
+                  t('استمع قبل التثبيت. لن يسمع الباقون معاينتك.'),
+                  style: const TextStyle(height: 1.35)),
               const SizedBox(height: 12),
               Expanded(
                 child: SoundPicker(
@@ -666,8 +669,8 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               const SizedBox(height: 12),
               AppButton(
                 label: _lanPicked.isEmpty
-                    ? 'اختر صوتًا'
-                    : 'هذا هو التحدي',
+                    ? t('اختر صوتًا')
+                    : t('هذا هو التحدي'),
                 icon: Icons.play_arrow,
                 onPressed:
                     _lanPicked.isEmpty ? null : _confirmLanPick,
@@ -679,14 +682,14 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           const Spacer(),
           Text(
               match.choosingName.isEmpty
-                  ? '…يختار الصوت'
-                  : '${match.choosingName} يختار الصوت…',
+                  ? t('…يختار الصوت')
+                  : t('{n} يختار الصوت…', {'n': match.choosingName}),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 22)),
           const SizedBox(height: 8),
-          const Text('استعد، فدورك قادم بعده.',
+          Text(t('استعد، فدورك قادم بعده.'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70)),
+              style: const TextStyle(color: Colors.white70)),
           const Spacer(),
         ]);
       case 'turn':
@@ -695,7 +698,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         if (mine) return _lanMyTurn(match);
         return _StageCard(children: [
           const Spacer(),
-          Text('حان دور ${match.nameOf(match.activePlayerId)}',
+          Text(t('حان دور {n}', {'n': match.nameOf(match.activePlayerId)}),
               textAlign: TextAlign.center,
               style: const TextStyle(
                   color: Colors.white,
@@ -711,7 +714,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             modelScale: 1.25,
           ),
           if ((match.soundTitle ?? '').isNotEmpty)
-            Text('“${match.soundTitle}”',
+            Text(t('“{n}”', {'n': t(match.soundTitle!)}),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white)),
           if (match.powerNote.isNotEmpty) ...[
@@ -722,9 +725,9 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                     color: Colors.amber, fontSize: 13, height: 1.35)),
           ],
           const SizedBox(height: 8),
-          const Text('ابقَ صامتًا — لا سماعة ولا ميكروفون لديك الآن.',
+          Text(t('ابقَ صامتًا — لا سماعة ولا ميكروفون لديك الآن.'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70)),
+              style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 16),
           // Power-ups: waiting players only (⚡ forces one redo, 🛡️
           // drops their worst round at match end).
@@ -747,7 +750,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                 child: _StageCard(
                     align: MainAxisAlignment.center,
                     children: [
-          const Text('النتيجة القادمة من المضيف…',
+          Text(t('النتيجة القادمة من المضيف…'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 6),
@@ -780,7 +783,10 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           ),
           if (mineNow)
             Text(
-                'نتيجتك ${(match.myLastScore ?? 0).toStringAsFixed(0)}/100${match.myScoreLabel?.isNotEmpty == true ? ' · ${match.myScoreLabel}' : ''}',
+                t('نتيجتك {s}', {
+                  's':
+                      '${(match.myLastScore ?? 0).toStringAsFixed(0)}/100${match.myScoreLabel?.isNotEmpty == true ? ' · ${match.myScoreLabel}' : ''}'
+                }),
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(color: Colors.amber, fontSize: 16)),
@@ -805,7 +811,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'السبب: ${turnNoteLabel(match.myNote)}',
+                t('السبب: {n}', {'n': t(turnNoteLabel(match.myNote))}),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: Colors.white70, fontSize: 13),
@@ -835,14 +841,14 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           ),
         );
       case 'done':
-        return const Center(child: Text('انتهت الحفلة'));
+        return Center(child: Text(t('انتهت الحفلة')));
       default:
-        return const _StageCard(children: [
-          Spacer(),
+        return _StageCard(children: [
+          const Spacer(),
           Center(
               child: CircularProgressIndicator(color: Colors.white)),
           SizedBox(height: 12),
-          Text('نجهّز الأصوات…',
+          Text(t('نجهّز الأصوات…'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white, fontSize: 18)),
           Spacer(),
@@ -901,21 +907,21 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           modelScale: 1.25,
         ),
         const SizedBox(height: 8),
-        Text('حان دورك يا ${match.nameOf(match.selfId)}',
+        Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
             textAlign: TextAlign.center,
             style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.w800)),
         if ((match.soundTitle ?? '').isNotEmpty)
-          Text('“${match.soundTitle}”',
+          Text(t('“{n}”', {'n': t(match.soundTitle!)}),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 18)),
         const SizedBox(height: 8),
-        const Text(
-          'اضغط الزر: ستستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وبعدها يُسجَّل تقليدك تلقائيًا.',
+        Text(
+          t('اضغط الزر: ستستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وبعدها يُسجَّل تقليدك تلقائيًا.'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70, fontSize: 15),
+          style: const TextStyle(color: Colors.white70, fontSize: 15),
         ),
         const SizedBox(height: 12),
         // ×2 must be armed BEFORE the take — it can never rewrite a grade
@@ -936,45 +942,45 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             }
           },
           icon: const Icon(Icons.play_arrow, size: 28),
-          label: const Text('ابدأ الاستماع',
+          label: Text(t('ابدأ الاستماع'),
               style:
-                  TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
         ),
       ]);
     }
     final body = switch (match.myPhase) {
       TurnPhase.countdown => CountdownView(
           secondsLeft: match.countdown <= 0 ? 3 : match.countdown,
-          caption: 'استعد…',
+          caption: t('استعد…'),
         ),
       TurnPhase.recording => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.mic, color: Colors.redAccent, size: 72),
             const SizedBox(height: 8),
-            const Text('قلّد الآن',
-                style: TextStyle(color: Colors.white, fontSize: 20)),
+            Text(t('قلّد الآن'),
+                style: const TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 16),
             WaveformBars(
                 values: match.myLevels, color: Colors.white, height: 64),
           ],
         ),
-      TurnPhase.listening => const Column(
+      TurnPhase.listening => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.hearing, color: Colors.white, size: 64),
+            const Icon(Icons.hearing, color: Colors.white, size: 64),
             SizedBox(height: 12),
-            Text('استمع… مرة واحدة',
+            Text(t('استمع… مرة واحدة'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 20)),
+                style: const TextStyle(color: Colors.white, fontSize: 20)),
           ],
         ),
-      _ => const Text('دورك… جهّز نفسك',
+      _ => Text(t('دورك… جهّز نفسك'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 20)),
+          style: const TextStyle(color: Colors.white, fontSize: 20)),
     };
     return _StageCard(children: [
-      Text('حان دورك يا ${match.nameOf(match.selfId)}',
+      Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
           style: const TextStyle(color: Colors.white70)),
       const Spacer(),
       body,
@@ -1037,7 +1043,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       },
       child: Scaffold(
       appBar: AppBar(
-        title: const Text('اللعب بموبايل واحد'),
+        title: Text(t('اللعب بموبايل واحد')),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.go('/home'),
@@ -1051,15 +1057,15 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               : _micDenied
                   ? _Blocked(
                       icon: Icons.mic_off,
-                      text: 'يلزم إذن الميكروفون لسماع تقليدك.',
-                      action: 'اسمح للميكروفون',
+                      text: t('يلزم إذن الميكروفون لسماع تقليدك.'),
+                      action: t('اسمح للميكروفون'),
                       onPressed: _boot,
                     )
                   : _noSounds
                       ? _Blocked(
                           icon: Icons.music_off,
                           text: _status,
-                          action: 'أضف صوتًا من المكتبة',
+                          action: t('أضف صوتًا من المكتبة'),
                           onPressed: () => context.go('/library'),
                         )
                       : Column(
@@ -1081,16 +1087,17 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       MatchStage.pick => _picker(
           game,
           multi: false,
-          title: 'يا ${game.selector?.name ?? game.playerName}، اختر التحدي',
+          title: t('يا {n}، اختر التحدي',
+              {'n': game.selector?.name ?? game.playerName}),
           subtitle: game.players.length > 1
-              ? 'ليبتعد الباقون الآن. سيقلدون قبلك، وستلعب أخيرًا.'
-              : 'اختر الصوت، وبعدها تسمعه مرة واحدة وتقلّده.',
+              ? t('ليبتعد الباقون الآن. سيقلدون قبلك، وستلعب أخيرًا.')
+              : t('اختر الصوت، وبعدها تسمعه مرة واحدة وتقلّده.'),
         ),
       MatchStage.pickQueue => _picker(
           game,
           multi: true,
-          title: 'اختر أصوات الجولات',
-          subtitle: 'اضغط بالترتيب. سيقلد الجميع كل صوت قبل الانتقال إلى التالي.',
+          title: t('اختر أصوات الجولات'),
+          subtitle: t('اضغط بالترتيب. سيقلد الجميع كل صوت قبل الانتقال إلى التالي.'),
         ),
       MatchStage.handoff => _Handoff(game: game),
       MatchStage.turn => _awaitingGo
@@ -1158,8 +1165,10 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         const SizedBox(height: 12),
         AppButton(
           label: multi
-              ? (ready ? 'ابدأ (${_picked.length})' : 'اختر صوتًا')
-              : 'هذا هو التحدي',
+              ? (ready
+                  ? t('ابدأ ({n})', {'n': _picked.length})
+                  : t('اختر صوتًا'))
+              : t('هذا هو التحدي'),
           icon: Icons.play_arrow,
           onPressed: ready ? () => _confirmPick(multi: multi) : null,
         ),
@@ -1176,8 +1185,9 @@ class _MatchHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final round = game.roundsTotal > 0
-        ? 'الجولة ${game.roundIndex + 1} من ${game.roundsTotal}'
-        : 'قبل البداية';
+        ? t('الجولة {a} من {b}',
+            {'a': game.roundIndex + 1, 'b': game.roundsTotal})
+        : t('قبل البداية');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1191,7 +1201,7 @@ class _MatchHeader extends ConsumerWidget {
             if (game.challenge != null)
               Flexible(
                 child: Text(
-                  game.challenge!.title,
+                  t(game.challenge!.title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: scheme.primary),
@@ -1264,8 +1274,8 @@ class _Handoff extends ConsumerWidget {
     final me = game.currentPlayer;
     return _StageCard(
       children: [
-        const Text('مرّر الهاتف إلى',
-            style: TextStyle(color: Colors.white70, fontSize: 18)),
+        Text(t('مرّر الهاتف إلى'),
+            style: const TextStyle(color: Colors.white70, fontSize: 18)),
         const SizedBox(height: 16),
         AvatarView(
           avatarId: ref.watch(shopProvider).avatar,
@@ -1282,11 +1292,12 @@ class _Handoff extends ConsumerWidget {
                 fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         Text(
-          'الجولة ${game.roundIndex + 1} من ${game.roundsTotal}',
+          t('الجولة {a} من {b}',
+              {'a': game.roundIndex + 1, 'b': game.roundsTotal}),
           style: const TextStyle(color: Colors.white70),
         ),
         if (game.challenge != null)
-          Text('التحدي: ${game.challenge!.title}',
+          Text(t('التحدي: {n}', {'n': t(game.challenge!.title)}),
               style: const TextStyle(color: Colors.white)),
         const Spacer(),
         FilledButton.icon(
@@ -1298,7 +1309,7 @@ class _Handoff extends ConsumerWidget {
           onPressed: () =>
               ref.read(gameProvider.notifier).acknowledgeHandoff(),
           icon: const Icon(Icons.play_arrow),
-          label: Text('أنا ${me.name} — ابدأ',
+          label: Text(t('أنا {n} — ابدأ', {'n': me.name}),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         ),
       ],
@@ -1347,8 +1358,8 @@ class _TurnStage extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   height: 1),
             ),
-            const Text('قلّد الآن',
-                style: TextStyle(color: Colors.white70, fontSize: 18)),
+            Text(t('قلّد الآن'),
+                style: const TextStyle(color: Colors.white70, fontSize: 18)),
             const SizedBox(height: 16),
             WaveformBars(values: live, color: Colors.white, height: 64),
           ],
@@ -1368,13 +1379,13 @@ class _TurnStage extends StatelessWidget {
           ],
         ),
       _ => scoring
-          ? const Column(
+          ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Colors.white),
+                const CircularProgressIndicator(color: Colors.white),
                 SizedBox(height: 12),
-                Text('نحسب درجة التقليد…',
-                    style: TextStyle(color: Colors.white, fontSize: 18)),
+                Text(t('نحسب درجة التقليد…'),
+                    style: const TextStyle(color: Colors.white, fontSize: 18)),
               ],
             )
           : Text(status,
@@ -1424,10 +1435,12 @@ class _RevealState extends ConsumerState<_Reveal> {
     final morePlayers = game.turnInRound + 1 < game.turnOrder.length;
     final moreRounds = game.roundIndex + 1 < game.roundsTotal;
     final nextLabel = morePlayers
-        ? 'مرّر الهاتف للاعب التالي'
+        ? t('مرّر الهاتف للاعب التالي')
         : moreRounds
-            ? (game.mode == GameMode.choice ? 'اختيار الصوت التالي' : 'الصوت التالي')
-            : 'النتائج';
+            ? (game.mode == GameMode.choice
+                ? t('اختيار الصوت التالي')
+                : t('الصوت التالي'))
+            : t('النتائج');
     final roundAttempts = game.attemptsForRound(game.roundIndex);
     final best = roundAttempts.fold<double>(0, (m, a) => a.score > m ? a.score : m);
     final leading = game.players.length > 1 && score >= best && score > 0;
@@ -1448,11 +1461,11 @@ class _RevealState extends ConsumerState<_Reveal> {
                 const SizedBox(height: 4),
               ],
               if (game.lastBoosted)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 4),
-                  child: Text('✖️ ×2 مضاعفة',
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(t('✖️ ×2 مضاعفة'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.amber,
                           fontSize: 14,
                           fontWeight: FontWeight.w800)),
@@ -1479,8 +1492,8 @@ class _RevealState extends ConsumerState<_Reveal> {
                 },
               ),
               if (leading)
-                const Text('أعلى تقليد لهذا الصوت حتى الآن',
-                    style: TextStyle(color: Colors.amber)),
+                Text(t('أعلى تقليد لهذا الصوت حتى الآن'),
+                    style: const TextStyle(color: Colors.amber)),
               const SizedBox(height: 8),
               RevealMeters(
                 kind: game.lastKind,
@@ -1490,15 +1503,16 @@ class _RevealState extends ConsumerState<_Reveal> {
                 timing: game.lastTiming ?? -1,
               ),
               const SizedBox(height: 6),
-              Text('مجموع ${me.name}: ${me.score}',
+              Text(t('مجموع {n}: {s}',
+                  {'n': me.name, 's': me.score}),
                   style: const TextStyle(color: Colors.white, fontSize: 16)),
               if (score == 0)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    'لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح',
+                    t('لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ),
               if (widget.targetWave.isNotEmpty &&
@@ -1525,7 +1539,7 @@ class _RevealState extends ConsumerState<_Reveal> {
         ),
         TextButton(
           onPressed: () => ref.read(gameProvider.notifier).finishMatch(),
-          child: const Text('إنهاء الحفلة'),
+          child: Text(t('إنهاء الحفلة')),
         ),
       ],
     );
@@ -1541,11 +1555,11 @@ class _Recap extends ConsumerWidget {
     final rows = [...game.attemptsForRound(game.roundIndex)]
       ..sort((a, b) => b.score.compareTo(a.score));
     final more = game.roundIndex + 1 < game.roundsTotal;
-    final title = rows.isEmpty ? 'انتهت الجولة' : rows.first.soundTitle;
+    final title = rows.isEmpty ? t('انتهت الجولة') : rows.first.soundTitle;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('نتيجة “$title”',
+        Text(t('نتيجة “{n}”', {'n': t(title)}),
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         Expanded(
@@ -1561,7 +1575,7 @@ class _Recap extends ConsumerWidget {
           ),
         ),
         AppButton(
-          label: more ? 'الجولة التالية' : 'النتائج النهائية',
+          label: more ? t('الجولة التالية') : t('النتائج النهائية'),
           icon: Icons.skip_next,
           onPressed: () => ref.read(gameProvider.notifier).nextAfterRecap(),
         ),
@@ -1587,7 +1601,7 @@ class _BoostPill extends StatelessWidget {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Tooltip(
-        message: 'مضاعفة — نقاط هذا الدور ×2، تُجهّز قبل بدء الاستماع',
+        message: t('مضاعفة — نقاط هذا الدور ×2، تُجهّز قبل بدء الاستماع'),
         triggerMode: TooltipTriggerMode.longPress,
         child: Material(
           color: armed
@@ -1604,7 +1618,7 @@ class _BoostPill extends StatelessWidget {
                 const Text('✖️', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 5),
                 Text(
-                  armed ? 'مسلّحة لهذا الدور' : '×2',
+                  armed ? t('مسلّحة لهذا الدور') : '×2',
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -1613,7 +1627,7 @@ class _BoostPill extends StatelessWidget {
                 ),
                 if (!armed) ...[
                   const SizedBox(width: 4),
-                  Text('(المخزون $stock)',
+                  Text(t('(المخزون {n})', {'n': stock}),
                       style: const TextStyle(
                           fontSize: 11, color: Colors.white60)),
                 ],
@@ -1649,6 +1663,7 @@ class _ReadyCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final shown = title;
     return _StageCard(children: [
       // First row of the card: ✖️ pill pinned to the card's top (right
       // edge in RTL), before anything else.
@@ -1660,15 +1675,15 @@ class _ReadyCard extends ConsumerWidget {
       const Spacer(),
       const Icon(Icons.hearing, color: Colors.white, size: 64),
       const SizedBox(height: 12),
-      if (title != null && title!.isNotEmpty)
-        Text('“$title”',
+      if (shown != null && shown.isNotEmpty)
+        Text(t('“{n}”', {'n': t(shown)}),
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 22)),
       const SizedBox(height: 8),
-      const Text(
-        'اضغط الزر: تسمع الصوت مرة، تنتظر ٣ ثوانٍ، وبعدين يتسجل تقليدك تلقائيًا.',
+      Text(
+        t('اضغط الزر: تسمع الصوت مرة، تنتظر ٣ ثوانٍ، وبعدين يتسجل تقليدك تلقائيًا.'),
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white70, fontSize: 15),
+        style: const TextStyle(color: Colors.white70, fontSize: 15),
       ),
       const SizedBox(height: 12),
       const Spacer(),
@@ -1680,8 +1695,8 @@ class _ReadyCard extends ConsumerWidget {
         ),
         onPressed: onGo,
         icon: const Icon(Icons.play_arrow, size: 28),
-        label: const Text('ابدأ الاستماع',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+        label: Text(t('ابدأ الاستماع'),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
       ),
     ]);
   }

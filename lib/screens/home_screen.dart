@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
 import '../services/cheat_codes.dart';
 import '../state/coins.dart';
 import '../state/game_state.dart';
+import '../state/language.dart';
 import '../state/shop_store.dart';
 import '../widgets/avatar_view.dart';
 
@@ -31,7 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future.microtask(() async {
       await ref.read(lanProvider).stopAll();
       final ctl = ref.read(gameProvider.notifier);
-      ctl.setLocked(false, status: 'فردي (بدون شبكة)');
+      ctl.setLocked(false, status: t('فردي (بدون شبكة)'));
       ref.read(matchProvider.notifier).reset();
       await ctl.reloadLibrary(ref.read(libraryProvider));
     });
@@ -57,9 +59,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       SnackBar(
         content: Text(switch (result) {
           CheatResult.granted =>
-            'شفرة مقبولة! +${CheatCodes.codes[code]} 🪙',
-          CheatResult.alreadyUsed => 'استخدمت هذه الشفرة من قبل',
-          CheatResult.invalid => 'شفرة غير صالحة',
+            t('شفرة مقبولة! +{n} 🪙',
+                {'n': CheatCodes.codes[code]}),
+          CheatResult.alreadyUsed => t('استخدمت هذه الشفرة من قبل'),
+          CheatResult.invalid => t('شفرة غير صالحة'),
         }),
       ),
     );
@@ -88,36 +91,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: Theme.of(context).colorScheme.primary),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Copy Cat',
+                      const Text('Copy Cat',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold)),
-                      Text('قلّد الصوت… واجمع النقاط!',
-                          style: TextStyle(fontSize: 14)),
+                      Text(t('قلّد الصوت… واجمع النقاط!'),
+                          style: const TextStyle(fontSize: 14)),
                     ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Language pill: label always names the OTHER language.
+                InkWell(
+                  onTap: () => ref
+                      .read(languageProvider.notifier)
+                      .set(currentLanguage == AppLanguage.english
+                          ? AppLanguage.arabic
+                          : AppLanguage.english),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color:
+                          Theme.of(context).colorScheme.secondaryContainer,
+                    ),
+                    child: Text(
+                        currentLanguage == AppLanguage.english
+                            ? 'عربي'
+                            : 'EN',
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              sounds == 0
+              t(sounds == 0
                   ? 'سجّل صوتًا من ٢–٦ ثوانٍ في أصواتي، ثم العب.'
-                  : 'لديك $sounds أصوات. اختر:',
+                  : 'لديك {n} أصوات. اختر:',
+                  {'n': sounds}),
               style: const TextStyle(height: 1.35),
             ),
             const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: () => context.go('/party'),
               icon: const Icon(Icons.smartphone, size: 26),
-              label: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('اللعب بموبايل واحد',
-                    style: TextStyle(fontSize: 20)),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(t('اللعب بموبايل واحد'),
+                    style: const TextStyle(fontSize: 20)),
               ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(64),
@@ -131,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: _MenuCard(
                     icon: Icons.add_home,
-                    label: 'إنشاء غرفة',
+                    label: t('إنشاء غرفة'),
                     onTap: () => context.go('/lobby?host=1'),
                   ),
                 ),
@@ -139,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: _MenuCard(
                     icon: Icons.group_add,
-                    label: 'انضمام',
+                    label: t('انضمام'),
                     onTap: () => context.go('/lobby?host=0'),
                   ),
                 ),
@@ -147,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: _MenuCard(
                     icon: Icons.library_music,
-                    label: 'أصواتي',
+                    label: t('أصواتي'),
                     onTap: () => context.go('/library'),
                   ),
                 ),
@@ -177,11 +207,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           crossAxisAlignment:
                               CrossAxisAlignment.start,
                           children: [
-                            const Text('شخصيتك — اضغط للمتجر',
-                                style: TextStyle(
+                            Text(t('شخصيتك — اضغط للمتجر'),
+                                style: const TextStyle(
                                     fontWeight: FontWeight.w800)),
                             Text(
-                                'رصيدك ${ref.watch(coinsProvider)} 🪙',
+                                t('رصيدك {n} 🪙', {
+                                  'n': ref.watch(coinsProvider)
+                                }),
                                 style: const TextStyle(
                                     fontSize: 14)),
                           ],
@@ -201,10 +233,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     TextField(
                       controller: _name,
-                      decoration: const InputDecoration(
-                        labelText: 'اسمك',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: t('اسمك'),
+                        prefixIcon: const Icon(Icons.person),
+                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (v) {
                         if (CheatCodes.codes.containsKey(v)) {
@@ -219,10 +251,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _room,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم الغرفة (للاستضافة)',
-                        prefixIcon: Icon(Icons.meeting_room),
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: t('اسم الغرفة (للاستضافة)'),
+                        prefixIcon: const Icon(Icons.meeting_room),
+                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (v) => ref
                           .read(gameProvider.notifier)
@@ -233,11 +265,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            const Center(
+            Center(
               child: Text(
-                'العب مع أصدقائك على نفس شبكة الواي فاي',
-                style:
-                    TextStyle(fontSize: 12, color: Colors.black54),
+                t('العب مع أصدقائك على نفس شبكة الواي فاي'),
+                style: const TextStyle(
+                    fontSize: 12, color: Colors.black54),
               ),
             ),
             const SizedBox(height: 8),

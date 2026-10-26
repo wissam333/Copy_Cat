@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
 import '../state/game_state.dart';
 import '../widgets/ui_bits.dart';
 
@@ -30,16 +31,17 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
   Future<void> _addPlayer() async {
     final game = ref.read(gameProvider);
     if (game.players.length >= 5) {
-      setState(() => _msg = 'الحد الأقصى ٥ لاعبين على الهاتف نفسه');
+      setState(() => _msg = t('الحد الأقصى ٥ لاعبين على الهاتف نفسه'));
       return;
     }
-    final name = await _askName('اسم اللاعب', 'لاعب ${game.players.length + 1}');
+    final name = await _askName(
+        t('اسم اللاعب'), t('لاعب {n}', {'n': game.players.length + 1}));
     if (name == null) return;
     ref.read(gameProvider.notifier).addPlayer(name);
   }
 
   Future<void> _rename(String id, String current) async {
-    final name = await _askName('تعديل الاسم', current);
+    final name = await _askName(t('تعديل الاسم'), current);
     if (name == null || name.trim().isEmpty) return;
     ref.read(gameProvider.notifier).renamePlayer(id, name);
   }
@@ -57,13 +59,13 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
   Future<void> _start() async {
     final game = ref.read(gameProvider);
     if (game.library.isEmpty) {
-      setState(() => _msg = 'أضف صوتًا من ٢–٦ ثوانٍ أولًا');
+      setState(() => _msg = t('أضف صوتًا من ٢–٦ ثوانٍ أولًا'));
       return;
     }
     final mic = await ref.read(audioIoProvider).ensureMicPermission();
     if (!mic) {
       if (mounted) {
-        setState(() => _msg = 'يلزم إذن الميكروفون لتقييم التقليد');
+        setState(() => _msg = t('يلزم إذن الميكروفون لتقييم التقليد'));
       }
       return;
     }
@@ -76,7 +78,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
     final game = ref.watch(gameProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('اللعب بموبايل واحد'),
+        title: Text(t('اللعب بموبايل واحد')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
@@ -86,16 +88,18 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
-            const Text('من سيلعب؟',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(t('من سيلعب؟'),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            const Text(
-              'تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
-              'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.',
-              style: TextStyle(height: 1.4),
+            Text(
+              t('تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
+                  'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.'),
+              style: const TextStyle(height: 1.4),
             ),
             const SizedBox(height: 8),
-            Text('أصواتك الجاهزة: ${game.library.length}',
+            Text(
+                t('أصواتك الجاهزة: {n}', {'n': game.library.length}),
                 style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
             for (final p in game.players)
@@ -103,7 +107,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
                 child: ListTile(
                   leading: PlayerAvatar(name: p.name, id: p.id, radius: 20),
                   title: Text(p.name),
-                  subtitle: Text(p.isHost ? 'أنت' : 'مشارك'),
+                  subtitle: Text(p.isHost ? t('أنت') : t('مشارك')),
                   onTap: () => _rename(p.id, p.name),
                   trailing: game.players.length > 1
                       ? IconButton(
@@ -118,7 +122,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
             OutlinedButton.icon(
               onPressed: game.players.length >= 5 ? null : _addPlayer,
               icon: const Icon(Icons.person_add),
-              label: const Text('أضف لاعب'),
+              label: Text(t('أضف لاعب')),
             ),
             if (_msg != null) ...[
               const SizedBox(height: 12),
@@ -127,13 +131,13 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
             const SizedBox(height: 16),
             if (game.library.isEmpty)
               AppButton(
-                label: 'أضف أصوات من المكتبة',
+                label: t('أضف أصوات من المكتبة'),
                 icon: Icons.library_music,
                 onPressed: () => context.go('/library'),
               )
             else
               AppButton(
-                label: 'لنبدأ',
+                label: t('لنبدأ'),
                 icon: Icons.play_arrow,
                 onPressed: _start,
               ),
@@ -186,11 +190,11 @@ class _NameDialogState extends State<_NameDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('إلغاء'),
+          child: Text(t('إلغاء')),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('حفظ'),
+          child: Text(t('حفظ')),
         ),
       ],
     );

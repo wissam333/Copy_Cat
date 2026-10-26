@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../i18n.dart';
 import '../services/lan_socket_manager.dart';
 import '../state/client_engine.dart';
 import '../state/game_state.dart';
@@ -73,7 +74,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       if (mounted) {
         setState(() {
           _busy = false;
-          _msg = 'فشلت الاستضافة: $e';
+          _msg = t('فشلت الاستضافة: {n}', {'n': e});
         });
       }
     }
@@ -83,9 +84,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     try {
       await Permission.location.request();
       await ref.read(lanProvider).startDiscovery();
-      ref.read(gameProvider.notifier).setStatus('جارٍ اكتشاف الغرف…');
+      ref.read(gameProvider.notifier).setStatus(t('جارٍ اكتشاف الغرف…'));
     } catch (e) {
-      if (mounted) setState(() => _msg = 'فشل الاكتشاف: $e');
+      if (mounted) setState(() => _msg = t('فشل الاكتشاف: {n}', {'n': e}));
     }
   }
 
@@ -98,9 +99,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       // Mic is needed later for your turns; ask while joining.
       await [Permission.location, Permission.microphone].request();
       await ref.read(clientEngineProvider).connect(ip, port: port);
-      ref.read(gameProvider.notifier).setStatus('متصل بـ $label — انتظر بدء المضيف للعبة');
+      ref.read(gameProvider.notifier).setStatus(
+          t('متصل بـ {n} — انتظر بدء المضيف للعبة', {'n': label}));
     } catch (e) {
-      if (mounted) setState(() => _msg = 'فشل الاتصال: $e');
+      if (mounted) setState(() => _msg = t('فشل الاتصال: {n}', {'n': e}));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -159,7 +161,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.startAsHost ? 'غرفتك' : 'الانضمام لغرفة'),
+        title:
+            Text(widget.startAsHost ? t('غرفتك') : t('الانضمام لغرفة')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _leave,
@@ -191,10 +194,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                                   fontWeight: FontWeight.bold)),
                           Text(
                               match.locked
-                                  ? 'الغرفة مقفلة — بدأت اللعبة'
+                                  ? t('الغرفة مقفلة — بدأت اللعبة')
                                   : match.order.length <= 1
-                                      ? 'بانتظار انضمام أصدقائك…'
-                                      : '${match.order.length} هواتف في الغرفة',
+                                      ? t('بانتظار انضمام أصدقائك…')
+                                      : t('{n} هواتف في الغرفة',
+                                          {'n': match.order.length}),
                               style: const TextStyle(fontSize: 13)),
                         ],
                       ),
@@ -203,21 +207,24 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 ),
               ),
             ),
-            const SectionTitle('الهواتف في الغرفة'),
+            SectionTitle(t('الهواتف في الغرفة')),
             if (match.order.isEmpty)
-              const Text('لا أحد بعد.')
+              Text(t('لا أحد بعد.'))
             else
               for (final p in match.order)
                 PlayerTile(
-                    name: '${p.name}${p.isHost ? ' (مضيف)' : ''}',
-                    subtitle: p.id == match.selfId ? 'هذا أنت' : 'متصل',
+                    name:
+                        '${p.name}${p.isHost ? t(' (مضيف)') : ''}',
+                    subtitle: p.id == match.selfId
+                        ? t('هذا أنت')
+                        : t('متصل'),
                     avatarId: ShopData.avatarOf(match.gear[p.id])),
             if (widget.startAsHost) ...[
-              const SectionTitle('طريقة اللعب'),
+              SectionTitle(t('طريقة اللعب')),
               for (final m in GameMode.values)
                 _ModeCard(
-                  title: _modeMeanings[m]!.$1,
-                  blurb: _modeMeanings[m]!.$2,
+                  title: t(_modeMeanings[m]!.$1),
+                  blurb: t(_modeMeanings[m]!.$2),
                   selected: match.mode == m,
                   onTap: () {
                     ref.read(matchProvider.notifier).setMode(m);
@@ -226,7 +233,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                   },
                 ),
               if (match.mode == GameMode.host) ...[
-                const SectionTitle('أصوات التحدي (١–٥ بالترتيب)'),
+                SectionTitle(t('أصوات التحدي (١–٥ بالترتيب)')),
                 SizedBox(
                   height: 260,
                   child: SoundPicker(
@@ -246,23 +253,23 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       } else if (_queueIds.length < 5) {
                         _queueIds.add(s.id);
                       } else {
-                        _msg = 'خمس جولات كافية';
+                        _msg = t('خمس جولات كافية');
                       }
                     }),
                   ),
                 ),
               ],
             ] else ...[
-              const SectionTitle('طريقة اللعب'),
+              SectionTitle(t('طريقة اللعب')),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.videogame_asset),
-                  title: Text(modeTitle(match.mode)),
+                  title: Text(t(modeTitle(match.mode))),
                   subtitle:
-                      Text(_modeMeanings[match.mode]!.$2),
+                      Text(t(_modeMeanings[match.mode]!.$2)),
                 ),
               ),
-              const SectionTitle('غرف قريبة'),
+              SectionTitle(t('غرف قريبة')),
               _JoinSection(
                 busy: _busy,
                 onJoin: _join,
@@ -284,11 +291,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Text(
                         match.order.length < 2
-                            ? 'ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)'
+                            ? t('ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)')
                             : match.mode == GameMode.host &&
                                     _queueIds.isEmpty
-                                ? 'اختر صوتًا أولًا'
-                                : 'ابدأ اللعب',
+                                ? t('اختر صوتًا أولًا')
+                                : t('ابدأ اللعب'),
                       style: const TextStyle(fontSize: 18)),
                 ),
                 style: FilledButton.styleFrom(
@@ -298,10 +305,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
               OutlinedButton.icon(
                 onPressed: _leave,
                 icon: const Icon(Icons.logout),
-                label: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child:
-                      Text('غادر الغرفة', style: TextStyle(fontSize: 16)),
+                      Text(t('غادر الغرفة'), style: const TextStyle(fontSize: 16)),
                 ),
                 style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(56)),
@@ -373,11 +380,11 @@ class _JoinSection extends ConsumerWidget {
           builder: (context, snap) {
             final rooms = snap.data ?? const [];
             if (rooms.isEmpty) {
-              return const Card(
+              return Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                         child: Text(
-                            'لا توجد غرف بعد — تأكدوا من الاتصال بنفس شبكة الواي فاي.'),
+                            t('لا توجد غرف بعد — تأكدوا من الاتصال بنفس شبكة الواي فاي.')),
                 ),
               );
             }
@@ -392,7 +399,7 @@ class _JoinSection extends ConsumerWidget {
                         onPressed: busy
                             ? null
                             : () => onJoin(r.ip, r.port, r.name),
-                        child: const Text('انضم'),
+                        child: Text(t('انضم')),
                       ),
                     ),
                   ),
@@ -402,8 +409,8 @@ class _JoinSection extends ConsumerWidget {
         ),
         ExpansionTile(
           leading: const Icon(Icons.edit),
-                title: const Text('لديك عنوان IP المضيف؟'),
-                subtitle: const Text('يُستخدم غالبًا مع نقطة الاتصال'),
+                title: Text(t('لديك عنوان IP المضيف؟')),
+                subtitle: Text(t('يُستخدم غالبًا مع نقطة الاتصال')),
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -426,7 +433,7 @@ class _JoinSection extends ConsumerWidget {
                           : () => onJoin(ipController.text.trim(),
                               LanSocketManager.defaultPort,
                               ipController.text.trim()),
-                      child: const Text('اتصال')),
+                      child: Text(t('اتصال'))),
                 ],
               ),
             ),

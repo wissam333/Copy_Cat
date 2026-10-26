@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
 import '../services/shop_catalog.dart';
 import '../state/coins.dart';
 import '../state/shop_store.dart';
@@ -31,7 +32,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final preview = ShopCatalog.byId(previewId);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المتجر'),
+        title: Text(t('المتجر')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
@@ -43,19 +44,19 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: SegmentedButton<int>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                     value: 0,
-                    icon: Icon(Icons.person),
-                    label: Text('شخصيات')),
+                    icon: const Icon(Icons.person),
+                    label: Text(t('شخصيات'))),
                 ButtonSegment(
                     value: 1,
-                    icon: Text('😂', style: TextStyle(fontSize: 18)),
-                    label: Text('إيموجي')),
+                    icon: const Text('😂', style: TextStyle(fontSize: 18)),
+                    label: Text(t('إيموجي'))),
                 ButtonSegment(
                     value: 2,
-                    icon: Icon(Icons.bolt),
-                    label: Text('قوى')),
+                    icon: const Icon(Icons.bolt),
+                    label: Text(t('قوى'))),
               ],
               selected: {_tab},
               onSelectionChanged: (s) =>
@@ -97,14 +98,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       interactive: true,
                     ),
                     const SizedBox(height: 4),
-                    Text(preview.name,
+                    Text(t(preview.name),
                         style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 8),
                     _buyEquipButton(preview, owned, equipped, coins),
                     const SizedBox(height: 4),
-                    const Text('اسحب يمينًا فيدور الوجه مع إصبعك',
-                        style: TextStyle(fontSize: 12)),
+                    Text(t('اسحب يمينًا فيدور الوجه مع إصبعك'),
+                        style: const TextStyle(fontSize: 12)),
                   ],
                 ),
               ),
@@ -141,22 +142,22 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget _buyEquipButton(
       AvatarDef a, bool owned, bool equipped, int coins) {
     if (equipped) {
-      return const Chip(label: Text('شخصيتك الحالية'));
+      return Chip(label: Text(t('شخصيتك الحالية')));
     }
     if (owned) {
       return FilledButton.icon(
         onPressed: () =>
             ref.read(shopProvider.notifier).equip(a.id),
         icon: const Icon(Icons.checkroom),
-        label: const Text('جهّز هذه الشخصية'),
+        label: Text(t('جهّز هذه الشخصية')),
       );
     }
     return FilledButton.icon(
       onPressed: coins >= a.price ? () => _buy(a) : null,
       icon: const Text('🪙'),
       label: Text(coins >= a.price
-          ? 'اشترِ بـ ${a.price}'
-          : 'ينقصك ${a.price - coins} — العب لتجمع'),
+          ? t('اشترِ بـ {n}', {'n': a.price})
+          : t('ينقصك {n} — العب لتجمع', {'n': a.price - coins})),
     );
   }
 
@@ -166,8 +167,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok
-            ? 'أصبحت ${a.name} لك! جهّزها لتظهر في الحفلة'
-            : 'عملاتك لا تكفي — العب واجمع المزيد'),
+            ? t('أصبحت {n} لك! جهّزها لتظهر في الحفلة',
+                {'n': t(a.name)})
+            : t('عملاتك لا تكفي — العب واجمع المزيد')),
       ),
     );
     if (ok) {
@@ -179,12 +181,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Card(
+        Card(
           child: Padding(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Text(
-              'لا يوجد إيموجي مجاني هنا. كل إرسال أثناء انتظار دور غيرك يسحب من رصيدك فورًا — الأوقح أغلى.',
-              style: TextStyle(height: 1.4),
+              t('لا يوجد إيموجي مجاني هنا. كل إرسال أثناء انتظار دور غيرك يسحب من رصيدك فورًا — الأوقح أغلى.'),
+              style: const TextStyle(height: 1.4),
             ),
           ),
         ),
@@ -192,7 +194,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           Card(
             child: ListTile(
               leading: Text(e, style: const TextStyle(fontSize: 32)),
-              title: Text('🪙 ${ShopCatalog.emojiPrices[e]} لكل إرسال'),
+              title: Text(t('🪙 {n} لكل إرسال',
+                  {'n': ShopCatalog.emojiPrices[e]})),
               trailing: coins >= (ShopCatalog.emojiPrices[e] ?? 0)
                   ? const Icon(Icons.check, color: Colors.green)
                   : const Icon(Icons.lock_outline, color: Colors.grey),
@@ -208,12 +211,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Card(
+        Card(
           child: Padding(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Text(
-              'قوى تُستخدم مرة واحدة أثناء الحفلة. الشراء يضيف للمخزون، وكل استخدام يستهلك وحدة — الحكم على التوقيت هو المضيف، والاستخدام الخاطئ لا يُسترَد.',
-              style: TextStyle(height: 1.4),
+              t('قوى تُستخدم مرة واحدة أثناء الحفلة. الشراء يضيف للمخزون، وكل استخدام يستهلك وحدة — الحكم على التوقيت هو المضيف، والاستخدام الخاطئ لا يُسترَد.'),
+              style: const TextStyle(height: 1.4),
             ),
           ),
         ),
@@ -231,12 +234,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                           style: const TextStyle(fontSize: 30)),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(p.name,
+                        child: Text(t(p.name),
                             style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800)),
                       ),
-                      Text('المخزون: ${shop.inventory[p.id] ?? 0}',
+                      Text(
+                          t('المخزون: {n}',
+                              {'n': shop.inventory[p.id] ?? 0}),
                           style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme
@@ -244,7 +249,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(p.hint,
+                  Text(t(p.hint),
                       style: const TextStyle(height: 1.35, fontSize: 13)),
                   const SizedBox(height: 10),
                   FilledButton.icon(
@@ -253,8 +258,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         : null,
                     icon: const Text('🪙'),
                     label: Text(coins >= p.price
-                        ? 'اشترِ بـ ${p.price}'
-                        : 'ينقصك ${p.price - coins} — العب لتجمع'),
+                        ? t('اشترِ بـ {n}', {'n': p.price})
+                        : t('ينقصك {n} — العب لتجمع',
+                            {'n': p.price - coins})),
                   ),
                 ],
               ),
@@ -270,8 +276,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok
-            ? 'وحدة ${p.name} في مخزونك — استخدمها أثناء الحفلة'
-            : 'عملاتك لا تكفي — العب واجمع المزيد'),
+            ? t('وحدة {n} في مخزونك — استخدمها أثناء الحفلة',
+                {'n': t(p.name)})
+            : t('عملاتك لا تكفي — العب واجمع المزيد')),
       ),
     );
   }
@@ -293,8 +300,8 @@ class _ShopAvatarTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final label = equipped
-        ? 'مجهز'
-        : (avatar.price == 0 ? 'مجاني' : '🪙 ${avatar.price}');
+        ? t('مجهز')
+        : (avatar.price == 0 ? t('مجاني') : '🪙 ${avatar.price}');
     return Material(
       color: selected ? scheme.primaryContainer : scheme.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(16),
@@ -318,7 +325,7 @@ class _ShopAvatarTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  avatar.name,
+                  t(avatar.name),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,

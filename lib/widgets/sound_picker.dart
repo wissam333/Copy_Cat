@@ -1,6 +1,7 @@
 // Pick one challenge or an ordered queue of them.
 import 'package:flutter/material.dart';
 
+import '../i18n.dart';
 import '../models/game_sound.dart';
 import 'sprite_button.dart';
 
@@ -24,7 +25,7 @@ class SoundPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (sounds.isEmpty) {
-      return const Center(child: Text('المكتبة فارغة.'));
+      return Center(child: Text(t('المكتبة فارغة.')));
     }
     return ListView.separated(
       itemCount: sounds.length,
@@ -60,7 +61,8 @@ class SoundPicker extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.w700)),
                         Text(
-                          '${sound.durationSeconds.toStringAsFixed(1)} ثانية',
+                          t('{n} ثانية',
+                              {'n': sound.durationSeconds.toStringAsFixed(1)}),
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],

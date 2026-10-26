@@ -16,6 +16,8 @@ import '../services/lan_socket_manager.dart';
 import '../services/pitch_extractor.dart';
 import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart';
+
+import '../i18n.dart';
 import 'coins.dart';
 import 'game_state.dart';
 import 'shop_store.dart';
@@ -174,7 +176,8 @@ class HostEngine {
         if (active != id || _turnDone) return;
         if (_turnDouble) return;
         _turnDouble = true;
-        _announcePower('✖️ ${ref.read(matchProvider).nameOf(id)} مضاعفة نشطة لهذا الدور');
+        _announcePower(t('✖️ {n} مضاعفة نشطة لهذا الدور',
+            {'n': ref.read(matchProvider).nameOf(id)}));
       case 'volt':
         if (active == null ||
             active == id ||
@@ -184,13 +187,16 @@ class HostEngine {
           return;
         }
         _voltQueued = true;
-        _announcePower(
-            '⚡ ${ref.read(matchProvider).nameOf(id)} أعاد دور ${ref.read(matchProvider).nameOf(active)}');
+        _announcePower(t('⚡ {a} أعاد دور {b}', {
+          'a': ref.read(matchProvider).nameOf(id),
+          'b': ref.read(matchProvider).nameOf(active),
+        }));
       case 'shield':
         if (_shields[id] == true) return;
         _shields[id] = true;
         _broadcastPhase({'shields': _shields});
-        _announcePower('🛡️ ${ref.read(matchProvider).nameOf(id)} درع نشط — أخفض جولة تُحذف');
+        _announcePower(t('🛡️ {n} درع نشط — أخفض جولة تُحذف',
+            {'n': ref.read(matchProvider).nameOf(id)}));
     }
   }
 
@@ -199,7 +205,7 @@ class HostEngine {
     final active = _activeTurn?.playerId;
     if (active != selfId || _turnDone || _turnDouble) return;
     _turnDouble = true;
-    _announcePower('✖️ مضاعفة نشطة لهذا الدور');
+    _announcePower(t('✖️ مضاعفة نشطة لهذا الدور'));
   }
 
   void _announcePower(String note) {
@@ -280,14 +286,16 @@ class HostEngine {
           return;
         }
         _voltQueued = true;
-        _announcePower(
-            '⚡ ${match.nameOf(selfId)} أعاد دور ${match.nameOf(active)}');
+        _announcePower(t('⚡ {a} أعاد دور {b}', {
+          'a': match.nameOf(selfId),
+          'b': match.nameOf(active),
+        }));
       case 'shield':
         if (_shields[selfId] == true) return;
         _shields[selfId!] = true;
         _broadcastPhase({'shields': _shields});
-        _announcePower(
-            '🛡️ ${match.nameOf(selfId)} درع نشط — أخفض جولة تُحذف');
+        _announcePower(t('🛡️ {n} درع نشط — أخفض جولة تُحذف',
+            {'n': match.nameOf(selfId)}));
     }
   }
 
@@ -299,12 +307,12 @@ class HostEngine {
       return;
     }
     if (_peerIds.containsKey(sender)) return;
-    final name = (json['name'] ?? 'لاعب').toString().trim();
+    final name = (json['name'] ?? t('لاعب')).toString().trim();
     final id = const Uuid().v4();
     _peerIds[sender] = id;
     final order = [
       ...match.order,
-      LanPlayer(id: id, name: name.isEmpty ? 'لاعب' : name),
+      LanPlayer(id: id, name: name.isEmpty ? t('لاعب') : name),
     ];
     _match.setOrder(order);
     _match.setGear(
@@ -326,7 +334,7 @@ class HostEngine {
           _OfferSound(
             ownerId: playerId,
             id: (s['id'] ?? '').toString(),
-            title: (s['title'] ?? 'صوت').toString(),
+            title: (s['title'] ?? t('صوت')).toString(),
             durationSeconds: ((s['durationSeconds'] as num?) ?? 4).toDouble(),
             pitchMap: [
               for (final f in ((s['pitchMap'] as List?) ?? const []))
@@ -405,18 +413,19 @@ class HostEngine {
   /// Gathers what Start needs, locks, and launches the run in background.
   /// Returns an Arabic error (stay in lobby) or null (match started).
   Future<String?> startMatch(GameMode mode, {List<GameSound> playlist = const []}) async {
-    if (_running) return 'المباراة جارية';
+    if (_running) return t('المباراة جارية');
     final match = ref.read(matchProvider);
     if (match.order.length < 2) {
-      return 'لازم هاتفين على الأقل — للعب لوحدك استخدم اللعب بموبايل واحد';
+      return t(
+          'لازم هاتفين على الأقل — للعب لوحدك استخدم اللعب بموبايل واحد');
     }
     _lastMode = mode;
     _lastPlaylist = List<GameSound>.from(playlist);
     if (mode == GameMode.host && playlist.isEmpty) {
-      return 'اختر صوتًا واحدًا على الأقل';
+      return t('اختر صوتًا واحدًا على الأقل');
     }
     if (mode == GameMode.random) {
-      _match.setStatus('نجمع أصوات اللاعبين…');
+      _match.setStatus(t('نجمع أصوات اللاعبين…'));
       _offers.clear();
       _broadcastPhase({'stage': 'needLibraries'});
       await Future<void>.delayed(const Duration(seconds: 3));
@@ -424,8 +433,8 @@ class HostEngine {
       _randomPool = [...await _ownOffers(), ..._pool()];
       if (_randomPool.isEmpty) {
         _match.setStatus(
-            'لا توجد أصوات — ليضف كل لاعب صوتًا من 2–6 ثوانٍ');
-        return 'لا توجد أصوات — ليضف كل لاعب صوتًا من 2–6 ثوانٍ';
+            t('لا توجد أصوات — ليضف كل لاعب صوتًا من 2–6 ثوانٍ'));
+        return t('لا توجد أصوات — ليضف كل لاعب صوتًا من 2–6 ثوانٍ');
       }
     }
     _match.setMode(mode);
@@ -755,7 +764,7 @@ class HostEngine {
       if (pitch.isEmpty) pitch = await PitchExtractor.extract(path);
       return GameSound(
         id: soundId,
-        title: (got.manifest['title'] ?? 'تحدي').toString(),
+        title: (got.manifest['title'] ?? t('تحدي')).toString(),
         filePath: path,
         durationSeconds:
             ((got.manifest['durationSeconds'] as num?) ?? 4).toDouble(),
@@ -981,7 +990,9 @@ class HostEngine {
     final sorted = totals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final rank = sorted.indexWhere((e) => e.key == playerId) + 1;
-    final label = _turnDouble ? 'المركز $rank · ×2' : 'المركز $rank';
+    final label = _turnDouble
+        ? t('المركز {n} · ×2', {'n': rank})
+        : t('المركز {n}', {'n': rank});
     final funny = FunnyLines.pickFor(score);
     ref.read(matchProvider.notifier).setTotals(totals, rounds);
     _match.setReveal(match.nameOf(playerId), safe, playerId: playerId);

@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import '../i18n.dart';
 import 'native_audio.dart';
 
 class InstantClip {
@@ -149,7 +150,7 @@ class InstantSounds {
   Future<InstantPage> apiTrending({int page = 1}) {
     return _getPage(
         '$apiBase/trending?q=sy&page=$page&min_duration=2&max_duration=6',
-        'تعذّر جلب القائمة');
+        t('تعذّر جلب القائمة'));
   }
 
   /// Search through the JSON API, server-filtered to game length.
@@ -159,7 +160,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/search?q=${Uri.encodeQueryComponent(q)}'
         '&page=$page&min_duration=2&max_duration=6',
-        'تعذّر البحث');
+        t('تعذّر البحث'));
   }
 
   /// One fixed site category, server-filtered to game length.
@@ -168,7 +169,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/category?category=${Uri.encodeQueryComponent(slug)}'
         '&q=sy&page=$page&min_duration=2&max_duration=6',
-        'تعذّر جلب التصنيف');
+        t('تعذّر جلب التصنيف'));
   }
 
   /// Merged search across all sources (round-robin). Items carry
@@ -179,7 +180,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/search_all?q=${Uri.encodeQueryComponent(q)}'
         '&page=$page&min_duration=2&max_duration=6',
-        'تعذّر البحث الشامل');
+        t('تعذّر البحث الشامل'));
   }
 
   /// Memesoundboard: pass [query] to search by name, or leave it empty
@@ -194,7 +195,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/memesoundboard?$sel&page=$page'
         '&min_duration=2&max_duration=6',
-        'تعذّر الجلب');
+        t('تعذّر الجلب'));
   }
 
   /// 101soundboards search. Durations come free with the items.
@@ -204,7 +205,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/101soundboards?q=${Uri.encodeQueryComponent(q)}'
         '&page=$page&min_duration=2&max_duration=6',
-        'تعذّر البحث');
+        t('تعذّر البحث'));
   }
 
   /// 101soundboards tags for the drill-down. Falls back to the static
@@ -244,7 +245,7 @@ class InstantSounds {
         .timeout(const Duration(seconds: 30));
     if (res.statusCode != 200) {
       throw StateError(_serverMessage(res.body) ??
-          'تعذّر جلب اللوحات (${res.statusCode})');
+          t('تعذّر جلب اللوحات ({n})', {'n': res.statusCode}));
     }
     return _parseBoardPage(res.body);
   }
@@ -254,7 +255,7 @@ class InstantSounds {
     return _getPage(
         '$apiBase/101board?board=${Uri.encodeQueryComponent(board)}'
         '&page=$page&min_duration=2&max_duration=6',
-        'تعذّر جلب الأصوات');
+        t('تعذّر جلب الأصوات'));
   }
 
   Future<InstantPage> _getPage(String url, String errLabel) async {
@@ -325,7 +326,7 @@ class InstantSounds {
       final source = (e['source'] ?? 'myinstants').toString();
       final thumb = (e['thumbnail'] ?? '').toString();
       out.add(InstantClip(
-          title: title.isEmpty ? 'صوت' : title,
+          title: title.isEmpty ? t('صوت') : title,
           mp3Url: mp3,
           duration: dur,
           source: source.isEmpty ? 'myinstants' : source,
@@ -351,23 +352,23 @@ class InstantSounds {
     final uri = Uri.tryParse(url);
     if (uri == null ||
         !(uri.scheme == 'http' || uri.scheme == 'https')) {
-      throw StateError('الرابط غير صحيح — الصق رابط mp3 مباشر');
+      throw StateError(t('الرابط غير صحيح — الصق رابط mp3 مباشر'));
     }
     if (!uri.path.toLowerCase().endsWith('.mp3') &&
         // The 101 source serves its files through the API's own
         // /stream?url=... proxy (upstream blocks direct hotlinks).
         !(uri.host == Uri.parse(apiBase).host && uri.path == '/stream')) {
       throw StateError(
-          'يجب أن يكون الرابط لملف mp3 مباشر (ينتهي بـ .mp3)، وليس رابط صفحة');
+          t('يجب أن يكون الرابط لملف mp3 مباشر (ينتهي بـ .mp3)، وليس رابط صفحة'));
     }
     final req = http.Request('GET', uri);
     req.headers.addAll(_browserHeaders);
     final res = await req.send().timeout(const Duration(seconds: 60));
     if (res.statusCode != 200) {
-      throw StateError('فشل التحميل (${res.statusCode})');
+      throw StateError(t('فشل التحميل ({n})', {'n': res.statusCode}));
     }
     if ((res.contentLength ?? 0) > 10 * 1024 * 1024) {
-      throw StateError('الملف كبير جدًا');
+      throw StateError(t('الملف كبير جدًا'));
     }
     final dir = await getTemporaryDirectory();
     final file = File(
@@ -378,7 +379,7 @@ class InstantSounds {
       await for (final chunk in res.stream) {
         received += chunk.length;
         if (received > 10 * 1024 * 1024) {
-          throw StateError('الملف كبير جدًا');
+          throw StateError(t('الملف كبير جدًا'));
         }
         sink.add(chunk);
         onProgress?.call(received, res.contentLength);

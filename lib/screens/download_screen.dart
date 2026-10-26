@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../i18n.dart';
 import '../services/instant_catalog.dart';
 import '../services/instant_sounds.dart';
 import '../state/game_state.dart';
@@ -160,7 +161,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
         _boards = page == 1 ? res.boards : [..._boards, ...res.boards];
         _endOfList = res.hasNext == false || res.boards.isEmpty;
         if (res.boards.isEmpty && _boards.isEmpty) {
-          _msg = 'لا لوحات — جرّب تصنيفًا ثانيًا';
+          _msg = t('لا لوحات — جرّب تصنيفًا ثانيًا');
         }
       });
     } catch (e) {
@@ -168,7 +169,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
       setState(() {
         _boards = const [];
         _endOfList = true;
-        _msg = e is StateError ? e.message : 'تعذّر جلب اللوحات';
+        _msg = e is StateError ? e.message : t('تعذّر جلب اللوحات');
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -198,7 +199,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
     if (query.isEmpty && _provider == 'all') {
       setState(() {
         _loading = false;
-        _msg = 'اكتب كلمة للبحث';
+        _msg = t('اكتب كلمة للبحث');
         _query = query;
         _page = 1;
         _endOfList = true;
@@ -224,7 +225,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
         _clips = clips;
         _fromCatalog = false;
         _endOfList = res.hasNext == false || clips.isEmpty;
-        _msg = clips.isEmpty ? 'لا نتائج — جرّب كلمة ثانية' : null;
+        _msg = clips.isEmpty ? t('لا نتائج — جرّب كلمة ثانية') : null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -235,7 +236,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
           _clips = const [];
           _fromCatalog = false;
           _endOfList = true;
-          _msg = e is StateError ? e.message : 'تعذّر الجلب';
+          _msg = e is StateError ? e.message : t('تعذّر الجلب');
         });
         return;
       }
@@ -251,7 +252,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
         _clips = fallback;
         _fromCatalog = true;
         _endOfList = true;
-        _msg = 'تعذّر الاتصال — هذه قائمة محفوظة';
+        _msg = t('تعذّر الاتصال — هذه قائمة محفوظة');
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -273,7 +274,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
           }
         });
       } catch (_) {
-        if (mounted) setState(() => _msg = 'تعذّر جلب المزيد');
+        if (mounted) setState(() => _msg = t('تعذّر جلب المزيد'));
       } finally {
         if (mounted) setState(() => _moreLoading = false);
       }
@@ -293,7 +294,7 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
         if (res.hasNext == false || res.clips.isEmpty) _endOfList = true;
       });
     } catch (_) {
-      if (mounted) setState(() => _msg = 'تعذّر جلب المزيد');
+      if (mounted) setState(() => _msg = t('تعذّر جلب المزيد'));
     } finally {
       if (mounted) setState(() => _moreLoading = false);
     }
@@ -335,7 +336,7 @@ void _search() {
     if (_inBoards) return;
     final n = int.tryParse(_pageCtl.text.trim()) ?? 0;
     if (n < 1) {
-      setState(() => _msg = 'اكتب رقم صفحة 1 أو أكثر');
+      setState(() => _msg = t('اكتب رقم صفحة 1 أو أكثر'));
       return;
     }
     _pageCtl.clear();
@@ -343,32 +344,34 @@ void _search() {
   }
 
   String _statusLine() {
-    const how = '▶ معاينة، ⬇ إضافة';
-    if (_fromCatalog) return 'قائمة محفوظة (${_clips.length}) — $how';
+    final how = t('▶ معاينة، ⬇ إضافة');
+    if (_fromCatalog) {
+      return '${t('قائمة محفوظة ({n})', {'n': _clips.length})} — $how';
+    }
     if (_inBoards) {
       String? tag;
-      for (final t in _tags101) {
-        if (t.tag == _tag101) {
-          tag = t.name;
+      for (final t2 in _tags101) {
+        if (t2.tag == _tag101) {
+          tag = t2.name;
           break;
         }
       }
-      return '${tag ?? 'لوحات ١٠١'} (${_boards.length}) — صفحة $_page';
+      return '${tag ?? t('لوحات ١٠١')} (${_boards.length}) — ${t('صفحة {n}', {'n': _page})}';
     }
-final prov = _providerNames[_provider] ?? '';
+final prov = t(_providerNames[_provider] ?? '');
     if (_provider == 'myinstants' && _category != null) {
-      return '${InstantSounds.categories[_category]} (${_clips.length}) — صفحة $_page — $how';
+      return '${InstantSounds.categories[_category]} (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
     }
     if (_provider == 'meme' && _query.isEmpty) {
       final head = _memeCat.isNotEmpty
-          ? 'ميم: ${InstantSounds.memeCategories[_memeCat]}'
-          : 'ميم: ${InstantSounds.memeSorts[_memeSort] ?? ''}';
-      return '$head (${_clips.length}) — صفحة $_page — $how';
+          ? '${t('ميم:')} ${InstantSounds.memeCategories[_memeCat]}'
+          : '${t('ميم:')} ${t(InstantSounds.memeSorts[_memeSort] ?? '')}';
+      return '$head (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
     }
     if (_query.isNotEmpty) {
-      return '$prov: “$_query” (${_clips.length}) — صفحة $_page — $how';
+      return '$prov: “$_query” (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
     }
-    return '$prov: كلها 2–6 ثوانٍ (${_clips.length}) — صفحة $_page — $how';
+    return '$prov: ${t('كلها 2–6 ثوانٍ')} (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
   }
 
   Future<String?> _ensureLocal(String mp3Url) async {
@@ -381,7 +384,7 @@ final prov = _providerNames[_provider] ?? '';
     } catch (e) {
       if (mounted) {
         setState(() => _msg =
-            e is StateError ? e.message : 'فشل التحميل: $e');
+            e is StateError ? e.message : t('فشل التحميل: {n}', {'n': e}));
       }
       return null;
     }
@@ -408,7 +411,9 @@ final prov = _providerNames[_provider] ?? '';
       setState(() => _playingUrl = clip.mp3Url);
       await ref.read(audioIoProvider).playOnce(path);
     } catch (e) {
-      if (mounted) setState(() => _msg = 'فشل التشغيل: $e');
+      if (mounted) {
+        setState(() => _msg = t('فشل التشغيل: {n}', {'n': e}));
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -433,12 +438,16 @@ final prov = _providerNames[_provider] ?? '';
             .read(gameProvider.notifier)
             .reloadLibrary(ref.read(libraryProvider));
         setState(
-            () => _msg = 'تمت الإضافة للمكتبة: “${res.sound!.title}”');
+            () => _msg = t('تمت الإضافة للمكتبة: "{n}"',
+                {'n': res.sound!.title}));
       } else {
         setState(() => _msg = res.error);
       }
     } catch (e) {
-      if (mounted) setState(() => _msg = 'فشلت الإضافة: $e');
+      if (mounted) {
+        setState(() =>
+            _msg = t('فشلت الإضافة: {n}', {'n': e}));
+      }
     } finally {
       if (mounted) setState(() => _busyUrl = null);
     }
@@ -447,7 +456,7 @@ final prov = _providerNames[_provider] ?? '';
   Future<void> _addLink() async {
     final url = _link.text.trim();
     if (url.isEmpty) {
-      setState(() => _msg = 'الصق رابط الـmp3 أولًا');
+      setState(() => _msg = t('الصق رابط الـmp3 أولًا'));
       return;
     }
     setState(() {
@@ -461,7 +470,7 @@ final prov = _providerNames[_provider] ?? '';
           ? fileName
               .substring(0, fileName.length - 4)
               .replaceAll(RegExp(r'[-_]+'), ' ')
-          : 'صوت من الإنترنت';
+          : t('صوت من الإنترنت');
       final res = await ref
           .read(libraryProvider)
           .ingest(path, title: title, sourceUrl: url);
@@ -471,7 +480,8 @@ final prov = _providerNames[_provider] ?? '';
             .read(gameProvider.notifier)
             .reloadLibrary(ref.read(libraryProvider));
         setState(() {
-          _msg = 'تمت الإضافة للمكتبة: “${res.sound!.title}”';
+          _msg = t('تمت الإضافة للمكتبة: "{n}"',
+              {'n': res.sound!.title});
           _link.clear();
         });
       } else {
@@ -480,7 +490,7 @@ final prov = _providerNames[_provider] ?? '';
     } catch (e) {
       if (mounted) {
         setState(
-            () => _msg = e is StateError ? e.message : 'فشل التحميل: $e');
+            () => _msg = e is StateError ? e.message : t('فشل التحميل: {n}', {'n': e}));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -490,7 +500,10 @@ final prov = _providerNames[_provider] ?? '';
   Future<void> _openSite() async {    try {
       await _api.openSite();
     } catch (e) {
-      if (mounted) setState(() => _msg = 'تعذّر فتح المتصفح: $e');
+      if (mounted) {
+        setState(() =>
+            _msg = t('تعذّر فتح المتصفح: {n}', {'n': e}));
+      }
     }
   }
 
@@ -498,7 +511,7 @@ final prov = _providerNames[_provider] ?? '';
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تحميل أصوات'),
+        title: Text(t('تحميل أصوات')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/library'),
@@ -514,10 +527,10 @@ final prov = _providerNames[_provider] ?? '';
                   child: TextField(
                     controller: _q,
                     textInputAction: TextInputAction.search,
-                    decoration: const InputDecoration(
-                      hintText: 'ابحث عن صوت…',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: t('ابحث عن صوت…'),
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _search(),
                   ),
@@ -525,7 +538,7 @@ final prov = _providerNames[_provider] ?? '';
                 const SizedBox(width: 8),
                 FilledButton(
                     onPressed: _loading ? null : _search,
-                    child: const Text('بحث')),
+                    child: Text(t('بحث'))),
               ],
             ),
             const SizedBox(height: 8),
@@ -538,7 +551,7 @@ final prov = _providerNames[_provider] ?? '';
                       padding:
                           const EdgeInsetsDirectional.only(end: 6),
                       child: ChoiceChip(
-                        label: Text(e.value),
+                        label: Text(t(e.value)),
                         selected: _provider == e.key,
                         onSelected: (_) => _pickProvider(e.key),
                       ),
@@ -556,7 +569,7 @@ final prov = _providerNames[_provider] ?? '';
                       padding:
                           const EdgeInsetsDirectional.only(end: 6),
                       child: ChoiceChip(
-                        label: const Text('الكل'),
+                        label: Text(t('الكل')),
                         selected: _category == null,
                         onSelected: (_) => _pickCategory(null),
                       ),
@@ -587,7 +600,7 @@ if (_provider == 'meme') ...[
                         padding: const EdgeInsetsDirectional.only(
                             end: 6),
                         child: ChoiceChip(
-                          label: Text(e.value),
+                          label: Text(t(e.value)),
                           selected: _memeSort == e.key &&
                               _query.isEmpty,
                           onSelected: (_) => _pickMemeSort(e.key),
@@ -625,14 +638,14 @@ if (_provider == 'meme') ...[
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      for (final t in _tags101)
+                      for (final tg in _tags101)
                         Padding(
                           padding: const EdgeInsetsDirectional.only(
                               end: 6),
                           child: ChoiceChip(
-                            label: Text(t.name),
-                            selected: _tag101 == t.tag,
-                            onSelected: (_) => _pickTag(t.tag),
+                            label: Text(tg.name),
+                            selected: _tag101 == tg.tag,
+                            onSelected: (_) => _pickTag(tg.tag),
                           ),
                         ),
                     ],
@@ -653,7 +666,7 @@ if (_provider == 'meme') ...[
                   TextButton.icon(
                     onPressed: _backToBoards,
                     icon: const Icon(Icons.arrow_forward),
-                    label: const Text('اللوحات'),
+                    label: Text(t('اللوحات')),
                   ),
                 ],
               ),
@@ -671,13 +684,13 @@ if (_provider == 'meme') ...[
             const SizedBox(height: 8),
             if ((_inBoards ? _boards.isEmpty : _clips.isEmpty) &&
                 !_loading)
-              const Center(child: Text('فارغ.')),
+              Center(child: Text(t('فارغ.'))),
             if (_inBoards)
               for (final board in _boards)
                 Card(
                   child: ListTile(
                     leading: _Thumb(url: board.thumbnail),
-                    title: Text(board.title,
+                    title: Text(t(board.title),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                     trailing: const Icon(Icons.chevron_left),
@@ -694,7 +707,7 @@ if (_provider == 'meme') ...[
                   return Card(
                     child: ListTile(
                       leading: _Thumb(url: clip.thumbnail),
-                      title: Text(clip.title,
+                      title: Text(t(clip.title),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                       subtitle: (dur == null && !showSrc)
@@ -702,10 +715,11 @@ if (_provider == 'meme') ...[
                           : Text(
                               [
                                 if (dur != null)
-                                  '${dur.toStringAsFixed(1)} ث',
+                                  t('{n} ث',
+                                      {'n': dur.toStringAsFixed(1)}),
                                 if (showSrc)
-                                  _sourceNames[clip.source] ??
-                                      clip.source,
+                                  t(_sourceNames[clip.source] ??
+                                      clip.source),
                               ].join(' · '),
                               style:
                                   const TextStyle(fontSize: 12)),
@@ -739,7 +753,7 @@ if (_provider == 'meme') ...[
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: OutlinedButton(
                   onPressed: _moreLoading ? null : _more,
-                  child: Text(_moreLoading ? '…' : 'المزيد'),
+                  child: Text(_moreLoading ? '…' : t('المزيد')),
                 ),
               ),
             if (!_inBoards &&
@@ -755,10 +769,11 @@ if (_provider == 'meme') ...[
                         controller: _pageCtl,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.go,
-                        decoration: const InputDecoration(
-                          hintText: 'اذهب لصفحة… (مثال 400)',
-                          prefixIcon: Icon(Icons.last_page),
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText:
+                              t('اذهب لصفحة… (مثال 400)'),
+                          prefixIcon: const Icon(Icons.last_page),
+                          border: const OutlineInputBorder(),
                           isDense: true,
                         ),
                         onSubmitted: (_) {
@@ -769,19 +784,19 @@ if (_provider == 'meme') ...[
                     const SizedBox(width: 8),
                     FilledButton.tonal(
                       onPressed: _loading ? null : _jump,
-                      child: const Text('اذهب'),
+                      child: Text(t('اذهب')),
                     ),
                   ],
                 ),
               ),
             const Divider(height: 32),
-            const Text('صوت من خارج القائمة؟',
-                style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(t('صوت من خارج القائمة؟'),
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            const Text(
-              'افتح الموقع في المتصفح، انسخ رابط ملف الـmp3 مباشرة، والصقه هنا.',
-              style: TextStyle(fontSize: 13),
+            Text(
+              t('افتح الموقع في المتصفح، انسخ رابط ملف الـmp3 مباشرة، والصقه هنا.'),
+              style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -789,7 +804,7 @@ if (_provider == 'meme') ...[
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _openSite,
                 icon: const Icon(Icons.open_in_browser),
-                label: const Text('افتح myinstants في المتصفح'),
+                label: Text(t('افتح myinstants في المتصفح')),
               ),
             ),
             const SizedBox(height: 8),
@@ -797,11 +812,11 @@ if (_provider == 'meme') ...[
               controller: _link,
               keyboardType: TextInputType.url,
               textDirection: TextDirection.ltr,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'https://…mp3',
-                labelText: 'رابط الـmp3',
-                prefixIcon: Icon(Icons.link),
-                border: OutlineInputBorder(),
+                labelText: t('رابط الـmp3'),
+                prefixIcon: const Icon(Icons.link),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -810,7 +825,7 @@ if (_provider == 'meme') ...[
               child: FilledButton.icon(
                 onPressed: _busy ? null : _addLink,
                 icon: const Icon(Icons.download),
-                label: const Text('تحميل وإضافة للمكتبة'),
+                label: Text(t('تحميل وإضافة للمكتبة')),
               ),
             ),
             if (_busy) ...[

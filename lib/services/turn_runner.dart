@@ -59,7 +59,8 @@ class TurnResult {
       );
 }
 
-/// Formal Arabic explanation for a zero note code. Empty for `ok`.
+/// Formal explanation for a zero note code. Empty for `ok`.
+/// Keys are Arabic strings — the caller renders them through t().
 String turnNoteLabel(String note) => switch (note) {
       'no-challenge' => 'لم يصل ملف التحدي إلى هاتفك',
       'play-failed' => 'تعذّر تشغيل صوت التحدي',

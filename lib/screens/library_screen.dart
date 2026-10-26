@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../i18n.dart';
 import '../services/pitch_extractor.dart';
 import '../state/game_state.dart';
 import '../widgets/sprite_button.dart';
@@ -85,12 +86,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             .read(gameProvider.notifier)
             .reloadLibrary(ref.read(libraryProvider));
         _loadWaves();
-        setState(() => _msg = 'تمت الإضافة: “${res.sound!.title}”');
+        setState(() => _msg =
+            t('تمت الإضافة: "{n}"', {'n': res.sound!.title}));
       } else {
         setState(() => _msg = res.error);
       }
     } catch (e) {
-      setState(() => _msg = 'فشل الاستيراد: $e');
+      setState(() => _msg = t('فشل الاستيراد: {n}', {'n': e}));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -100,13 +102,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     if (_recording) return;
     final mic = await Permission.microphone.request();
     if (!mic.isGranted) {
-      setState(() => _msg = 'يلزم إذن الميكروفون');
+      setState(() => _msg = t('يلزم إذن الميكروفون'));
       return;
     }
     setState(() {
       _recording = true;
       _live = const [];
-      _msg = 'جارٍ التسجيل… غنِّ أو قلّد لمدة $_recordSeconds ثوانٍ';
+      _msg = t('جارٍ التسجيل… غنِّ أو قلّد لمدة {n} ثوانٍ',
+          {'n': _recordSeconds});
     });
     try {
       final io = ref.read(audioIoProvider);
@@ -124,25 +127,28 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await _ampSub?.cancel();
       _ampSub = null;
       if (stopped == null) {
-        setState(() => _msg = 'التسجيل لم يُنتج ملفًا');
+        setState(() => _msg = t('التسجيل لم يُنتج ملفًا'));
         return;
       }
       final res = await ref.read(libraryProvider).ingest(stopped,
-          title:
-              'مقطع ${DateTime.now().hour}:${DateTime.now().minute}');
+          title: t('مقطع {h}:{m}', {
+            'h': DateTime.now().hour,
+            'm': DateTime.now().minute.toString().padLeft(2, '0')
+          }));
       if (res.sound != null) {
         await ref
             .read(gameProvider.notifier)
             .reloadLibrary(ref.read(libraryProvider));
         _loadWaves();
-        setState(() => _msg = 'تمت الإضافة: “${res.sound!.title}”');
+        setState(() => _msg =
+            t('تمت الإضافة: "{n}"', {'n': res.sound!.title}));
       } else {
         setState(() => _msg = res.error);
       }
     } catch (e) {
       await _ampSub?.cancel();
       _ampSub = null;
-      setState(() => _msg = 'فشل التسجيل: $e');
+      setState(() => _msg = t('فشل التسجيل: {n}', {'n': e}));
     } finally {
       if (mounted) setState(() => _recording = false);
     }
@@ -153,7 +159,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final game = ref.watch(gameProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('مكتبة الأصوات'),
+        title: Text(t('مكتبة الأصوات')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
@@ -170,7 +176,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     child: FilledButton.icon(
                       onPressed: _busy ? null : _import,
                       icon: const Icon(Icons.upload_file),
-                      label: const Text('استيراد (2–6 ثوانٍ)'),
+                      label: Text(t('استيراد (2–6 ثوانٍ)')),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -180,8 +186,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       icon: Icon(
                           _recording ? Icons.stop : Icons.mic),
                       label: Text(_recording
-                          ? 'جارٍ التسجيل…'
-                          : 'تسجيل $_recordSeconds ث'),
+                          ? t('جارٍ التسجيل…')
+                          : t('تسجيل {n} ث', {'n': _recordSeconds})),
                     ),
                   ),
                 ],
@@ -189,8 +195,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (!_recording) ...[
                 Row(
                   children: [
-                    const Text('المدة',
-                        style: TextStyle(fontSize: 13)),
+                    Text(t('المدة'),
+                        style: const TextStyle(fontSize: 13)),
                     Expanded(
                       child: Slider(
                         value: _recordSeconds.toDouble(),
@@ -219,7 +225,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       ? null
                       : () => context.go('/download'),
                   icon: const Icon(Icons.cloud_download_outlined),
-                  label: const Text('تحميل أصوات من الإنترنت'),
+                  label: Text(t('تحميل أصوات من الإنترنت')),
                 ),
               ),
               if (_recording) ...[
@@ -233,7 +239,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: Text(_msg!,
                       style: const TextStyle(fontSize: 12)),
                 ),
-              const SectionTitle('أصوات التحدي'),
+              SectionTitle(t('أصوات التحدي')),
               Expanded(
                 child: game.library.isEmpty
                     ? const Center(
@@ -253,9 +259,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   ListTile(
                                     leading: const Icon(
                                         Icons.audio_file_outlined),
-                                    title: Text(s.title),
+                                    title: Text(t(s.title)),
                                     subtitle: Text(
-                                        '${s.durationSeconds.toStringAsFixed(1)} ث · ${s.pitchMap.length} عينة نغمية'),
+                                        t('{n} ث · {s} عينة نغمية', {
+                                      'n': s.durationSeconds
+                                          .toStringAsFixed(1),
+                                      's': s.pitchMap.length
+                                    })),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -293,8 +303,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                                 ScaffoldMessenger.of(
                                                         context)
                                                     .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            'فشل التشغيل: $e')));
+                                                        content: Text(t(
+                                                            'فشل التشغيل: {n}',
+                                                            {'n': e}))));
                                               }
                                             } finally {
                                               if (context.mounted &&

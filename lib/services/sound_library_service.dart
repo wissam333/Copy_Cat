@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../i18n.dart';
 import '../models/game_sound.dart';
 import 'audio_io_service.dart';
 import 'native_audio.dart';
@@ -84,7 +85,7 @@ class SoundLibraryService {
   Future<LibraryResult> importFromPicker() async {
     final path = await NativeAudio().pickAudio();
     if (path == null) {
-      return const LibraryResult.fail('لم يتم اختيار ملف');
+      return LibraryResult.fail(t('لم يتم اختيار ملف'));
     }
     return ingest(path);
   }
@@ -95,12 +96,13 @@ class SoundLibraryService {
       {String? title, String? sourceUrl}) async {
     final duration = await audio.probeDuration(srcPath);
     if (duration == null) {
-      return const LibraryResult.fail('تعذّر قراءة الملف الصوتي');
+      return LibraryResult.fail(t('تعذّر قراءة الملف الصوتي'));
     }
     final seconds = duration.inMilliseconds / 1000.0;
     if (seconds < minSeconds || seconds > maxSeconds) {
-      return LibraryResult.fail(
-          'يجب أن يكون الصوت 2–6 ثوانٍ (هذا ${seconds.toStringAsFixed(1)} ث)');
+      return LibraryResult.fail(t('يجب أن يكون الصوت 2–6 ثوانٍ (هذا {n} ث)', {
+        'n': seconds.toStringAsFixed(1),
+      }));
     }
     // Compressed imports become WAV here so the stored pitch map is a
     // real contour, not a placeholder.
@@ -138,8 +140,8 @@ class SoundLibraryService {
       try {
         await File(dest).delete();
       } catch (_) {}
-      return const LibraryResult.fail(
-          'هذا الصوت موجود في المكتبة مسبقًا');
+      return LibraryResult.fail(
+          t('هذا الصوت موجود في المكتبة مسبقًا'));
     }
 
     final isWav = safeExt == '.wav';
