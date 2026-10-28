@@ -7,8 +7,11 @@ gradle-wrapper.jar
 GeneratedPluginRegistrant.java
 .cxx/
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
+# The release keystore IS committed on purpose (hobby app, GitHub-releases
+# distribution): one fixed signing key lets every CI build install as an
+# update over the previous one. Never regenerate android/app/mimic.jks.
 key.properties
+!key.properties
 **/*.keystore
 **/*.jks
+!app/mimic.jks
