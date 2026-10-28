@@ -388,6 +388,8 @@ const Map<String, String> _en = {
   'لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح':
       "We didn't hear you well — hold the phone closer and mimic louder",
   '“{n}”': '“{n}”',
+  'اسمع الأصلي ثم صوتك': 'Hear the original, then you',
+  'جارٍ التشغيل…': 'Playing…',
 };
 
 String t(String key, [Map<String, Object?>? params]) {

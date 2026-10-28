@@ -1420,11 +1420,28 @@ class _Reveal extends ConsumerStatefulWidget {
 
 class _RevealState extends ConsumerState<_Reveal> {
   late final String _funny;
+  bool _comparing = false;
 
   @override
   void initState() {
     super.initState();
     _funny = FunnyLines.pickFor(widget.game.lastScore ?? 0);
+  }
+
+  /// Plays the challenge then this device's take back to back. Only offered
+  /// when the last attempt on this device is the one being revealed —
+  /// remote LAN takes live on their recorder's phone (path is null here).
+  Future<void> _compare() async {
+    if (_comparing) return;
+    _comparing = true;
+    if (mounted) setState(() {});
+    try {
+      final io = ref.read(audioIoProvider);
+      await io.playOnce(widget.game.challenge!.filePath);
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      await io.playOnce(widget.game.attempts.last.path!);
+    } catch (_) {}
+    if (mounted) setState(() => _comparing = false);
   }
 
   @override
@@ -1444,6 +1461,11 @@ class _RevealState extends ConsumerState<_Reveal> {
     final roundAttempts = game.attemptsForRound(game.roundIndex);
     final best = roundAttempts.fold<double>(0, (m, a) => a.score > m ? a.score : m);
     final leading = game.players.length > 1 && score >= best && score > 0;
+    final last = game.attempts.isEmpty ? null : game.attempts.last;
+    final canCompare = game.challenge != null &&
+        last != null &&
+        (last.path?.isNotEmpty ?? false) &&
+        last.playerId == game.currentPlayer.id;
 
     return Column(
       children: [
@@ -1526,6 +1548,16 @@ class _RevealState extends ConsumerState<_Reveal> {
                 const SizedBox(height: 6),
                 WaveformBars(
                     values: widget.attemptWave, color: Colors.white, height: 42),
+              ],
+              if (canCompare) ...[
+                const SizedBox(height: 10),
+                AppButton(
+                  label:
+                      _comparing ? t('جارٍ التشغيل…') : t('اسمع الأصلي ثم صوتك'),
+                  icon: Icons.play_arrow,
+                  primary: false,
+                  onPressed: _compare,
+                ),
               ],
             ],
           ),
