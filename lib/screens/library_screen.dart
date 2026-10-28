@@ -210,7 +210,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                 () => _recordSeconds = v.round()),
                       ),
                     ),
-                    Text('$_recordSeconds ث',
+                    Text(t('{n} ث', {'n': _recordSeconds}),
                         style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold)),

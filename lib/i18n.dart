@@ -390,6 +390,26 @@ const Map<String, String> _en = {
   '“{n}”': '“{n}”',
   'اسمع الأصلي ثم صوتك': 'Hear the original, then you',
   'جارٍ التشغيل…': 'Playing…',
+  'من سيلعب؟': "Who's playing?",
+  'تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
+      'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.':
+      'Take turns on one phone — each player holds it on their turn. You '
+          'hear the sound once, wait 3 seconds, then mimic it and score.',
+  'أصواتك الجاهزة: {n}': 'Sounds ready: {n}',
+  'اسم اللاعب': 'Player name',
+  'لاعب {n}': 'Player {n}',
+  'لاعب 1': 'Player 1',
+  'تعديل الاسم': 'Edit name',
+  'أنت': 'You',
+  'مشارك': 'Player',
+  'أضف لاعب': 'Add player',
+  'أضف أصوات من المكتبة': 'Add sounds from the library',
+  'أضف صوتًا من ٢–٦ ثوانٍ أولًا': 'Add a 2–6 second sound first',
+  'يلزم إذن الميكروفون لتقييم التقليد': 'Mic permission is needed to score your mimic',
+  'الحد الأقصى ٥ لاعبين على الهاتف نفسه': 'Up to 5 players on one phone',
+  'لنبدأ': "Let's start",
+  'إلغاء': 'Cancel',
+  'حفظ': 'Save',
 };
 
 String t(String key, [Map<String, Object?>? params]) {
