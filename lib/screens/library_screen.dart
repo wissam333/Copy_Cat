@@ -203,7 +203,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         min: 2,
                         max: 6,
                         divisions: 4,
-                        label: '$_recordSeconds ث',
+                        label: t('{n} ث', {'n': _recordSeconds}),
                         onChanged: _busy
                             ? null
                             : (v) => setState(
@@ -242,9 +242,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SectionTitle(t('أصوات التحدي')),
               Expanded(
                 child: game.library.isEmpty
-                    ? const Center(
-                        child: Text(
-                            'فارغة. استورد أو سجّل صوتًا من 2–6 ثوانٍ للّعب.'))
+                    ? Center(
+                        child: Text(t(
+                            'فارغة. استورد أو سجّل صوتًا من 2–6 ثوانٍ للّعب.')))
                     : ListView.builder(
                         itemCount: game.library.length,
                         itemBuilder: (context, i) {

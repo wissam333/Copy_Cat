@@ -15,9 +15,16 @@ Future<void> main() async {
   IdentityStore.initialRoom = saved.$2;
   try {
     // Before runApp: the t() helper reads sync state, not the provider.
+    // No saved choice yet → follow the phone's language (ar fallback).
     final prefs = await SharedPreferences.getInstance();
-    currentLanguage =
-        prefs.getString('copycat.lang') == 'en' ? AppLanguage.english : AppLanguage.arabic;
+    final saved = prefs.getString('copycat.lang');
+    currentLanguage = saved == 'en'
+        ? AppLanguage.english
+        : saved == 'ar'
+            ? AppLanguage.arabic
+            : WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'en'
+                ? AppLanguage.english
+                : AppLanguage.arabic;
   } catch (_) {}
   runApp(const ProviderScope(child: MimicPartyApp()));
 }
