@@ -388,8 +388,6 @@ const Map<String, String> _en = {
   'لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح':
       "We didn't hear you well — hold the phone closer and mimic louder",
   '“{n}”': '“{n}”',
-  'اسمع الأصلي ثم صوتك': 'Hear the original, then you',
-  'جارٍ التشغيل…': 'Playing…',
   'من سيلعب؟': "Who's playing?",
   'تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
       'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.':
