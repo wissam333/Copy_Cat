@@ -272,9 +272,9 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         if (!alive()) return;
         setState(() {
           final next = [..._live, level];
-          // 6 s take at 10 Hz = 60 samples; the cap must not trim the head
+          // 6 s take at 20 Hz = 120 samples; the cap must not trim the head
           // or the live trace shifts against the original's timeline.
-          _live = next.length > 80 ? next.sublist(next.length - 80) : next;
+          _live = next.length > 160 ? next.sublist(next.length - 160) : next;
         });
       });
       final started = DateTime.now();
@@ -894,6 +894,20 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     );
   }
 
+  /// Live trace padded with silence to the take's full length (20 Hz mic
+  /// ticks) so the orange wave grows across the blue original in real time.
+  List<double> _paddedLevels(LanMatchData match) {
+    final expected = ((match.challenge?.durationSeconds ?? 3) *
+            AudioIoService.micTicksPerSecond)
+        .round()
+        .clamp(40, 120);
+    return [
+      ...match.myLevels,
+      ...List<double>.filled(
+          (expected - match.myLevels.length).clamp(0, expected), 0.0),
+    ];
+  }
+
   Widget _lanMyTurn(LanMatchData match) {
     // Manual gate: this phone taps once, then listen → 3 s → record
     // → score all run on their own. Other phones stay on their wait card.
@@ -963,8 +977,10 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             Text(t('قلّد الآن'),
                 style: const TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 16),
-            WaveformBars(
-                values: match.myLevels, color: Colors.white, height: 64),
+            OverlayWaves(
+              target: match.targetWave,
+              attempt: _paddedLevels(match),
+              height: 64),
           ],
         ),
       TurnPhase.listening => Column(
@@ -1342,10 +1358,12 @@ class _TurnStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Live trace padded with silence to the take's full length (10 Hz mic
+    // Live trace padded with silence to the take's full length (20 Hz mic
     // ticks), so the orange wave grows across the blue original in real time.
-    final expected =
-        ((game.challenge?.durationSeconds ?? 3) * 10).round().clamp(20, 60);
+    final expected = ((game.challenge?.durationSeconds ?? 3) *
+            AudioIoService.micTicksPerSecond)
+        .round()
+        .clamp(40, 120);
     final trace = [
       ...live,
       ...List<double>.filled((expected - live.length).clamp(0, expected), 0.0),

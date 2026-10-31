@@ -48,10 +48,20 @@ class AudioIoService {
 
   /// Live mic levels 0..1 (dBFS mapped) for drawing sound waves while
   /// recording. Emits only while the recorder is running.
-  Stream<double> micLevels() =>
-      _recorder
-          .onAmplitudeChanged(const Duration(milliseconds: 100))
-          .map((a) => ((a.current + 60) / 60).clamp(0.0, 1.0));
+  /// 50 ms ticks + a light EMA: 20 Hz reads as a smooth curve instead of
+  /// 10 Hz steps, and the EMA kills per-tick flicker without visible lag.
+  static const int micTicksPerSecond = 20;
+  Stream<double> micLevels() {
+    var prev = 0.0;
+    return _recorder
+        .onAmplitudeChanged(
+            const Duration(milliseconds: 1000 ~/ micTicksPerSecond))
+        .map((a) {
+      final raw = ((a.current + 60) / 60).clamp(0.0, 1.0);
+      prev += (raw - prev) * 0.55;
+      return prev;
+    });
+  }
 
   Future<void> stopPlayback() => _native.stopPlayback();
 

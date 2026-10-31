@@ -1120,8 +1120,8 @@ class MatchController extends Notifier<LanMatchData> {
   void pushLevel(double level) {
     final next = [...state.myLevels, level];
     state = state.copyWith(
-        myLevels: next.length > 48
-            ? next.sublist(next.length - 48)
+        myLevels: next.length > 160
+            ? next.sublist(next.length - 160)
             : next);
   }
 
