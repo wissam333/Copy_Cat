@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  test('wissam333! grants 1000 coins exactly once', () async {
+  test('wissam333! grants coins exactly once', () async {
     SharedPreferences.setMockInitialValues({});
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -17,23 +17,24 @@ void main() {
       await container.read(coinsProvider.notifier).add(n);
     }
 
+    final amount = CheatCodes.codes['wissam333!']!;
     expect(await CheatCodes.redeem('wissam333!', grant),
         CheatResult.granted);
-    expect(granted, 1000);
-    expect(container.read(coinsProvider), 1000);
+    expect(granted, amount);
+    expect(container.read(coinsProvider), amount);
 
     // Second try: nothing.
     expect(await CheatCodes.redeem('wissam333!', grant),
         CheatResult.alreadyUsed);
-    expect(granted, 1000);
-    expect(container.read(coinsProvider), 1000);
+    expect(granted, amount);
+    expect(container.read(coinsProvider), amount);
 
     // Wrong code: nothing.
     expect(await CheatCodes.redeem('nope', grant), CheatResult.invalid);
-    expect(granted, 1000);
+    expect(granted, amount);
   });
 
-  test('wissammagic grants 20000 exactly once', () async {
+  test('wissammagic grants coins exactly once', () async {
     SharedPreferences.setMockInitialValues({});
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -44,11 +45,12 @@ void main() {
       await container.read(coinsProvider.notifier).add(n);
     }
 
+    final amount = CheatCodes.codes['wissammagic']!;
     expect(await CheatCodes.redeem('wissammagic', grant),
         CheatResult.granted);
-    expect(granted, 20000);
+    expect(granted, amount);
     expect(await CheatCodes.redeem('wissammagic', grant),
         CheatResult.alreadyUsed);
-    expect(granted, 20000);
+    expect(granted, amount);
   });
 }

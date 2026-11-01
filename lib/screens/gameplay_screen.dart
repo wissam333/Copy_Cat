@@ -682,17 +682,17 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           );
         }
         return _StageCard(children: [
-          const Spacer(),
+          Spacer(),
           Text(
               match.choosingName.isEmpty
                   ? t('…يختار الصوت')
                   : t('{n} يختار الصوت…', {'n': match.choosingName}),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.text, fontSize: 22)),
-          const SizedBox(height: 8),
+              style: TextStyle(color: StageBlack.text, fontSize: 22)),
+          SizedBox(height: 8),
           Text(t('استعد، فدورك قادم بعده.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.muted)),
+              style: TextStyle(color: StageBlack.muted)),
           const Spacer(),
         ]);
       case 'turn':
@@ -703,11 +703,11 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           const Spacer(),
           Text(t('حان دور {n}', {'n': match.nameOf(match.activePlayerId)}),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   color: StageBlack.text,
                   fontSize: 30,
                   fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           AvatarView(
             avatarId: ShopData.avatarOf(match.activePlayerId == null
                 ? null
@@ -719,18 +719,18 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           if ((match.soundTitle ?? '').isNotEmpty)
             Text(t('“{n}”', {'n': t(match.soundTitle!)}),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: StageBlack.text)),
+                style: TextStyle(color: StageBlack.text)),
           if (match.powerNote.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(match.powerNote,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     color: StageBlack.gold, fontSize: 13, height: 1.35)),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(t('ابقَ صامتًا — لا سماعة ولا ميكروفون لديك الآن.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.muted)),
+              style: TextStyle(color: StageBlack.muted)),
           const SizedBox(height: 16),
           // Power-ups: waiting players only (⚡ forces one redo, 🛡️
           // drops their worst round at match end).
@@ -792,12 +792,12 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                 }),
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(color: StageBlack.gold, fontSize: 16)),
+                    TextStyle(color: StageBlack.gold, fontSize: 16)),
           if (match.lastFunny.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(match.lastFunny,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     color: StageBlack.text, fontSize: 15)),
           ],
           if (mineNow &&
@@ -816,7 +816,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               child: Text(
                 t('السبب: {n}', {'n': t(turnNoteLabel(match.myNote))}),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     color: StageBlack.muted, fontSize: 13),
               ),
             ),
@@ -835,7 +835,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(match.powerNote,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: StageBlack.gold, fontSize: 13, height: 1.35)),
             ),
           const SizedBox(height: 6),
@@ -915,8 +915,8 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     // → score all run on their own. Other phones stay on their wait card.
     if (match.goRequested) {
       return _StageCard(children: [
-        const Spacer(),
-        const Icon(Icons.hearing, color: StageBlack.text, size: 64),
+        Spacer(),
+        Icon(Icons.hearing, color: StageBlack.text, size: 64),
         const SizedBox(height: 4),
         AvatarView(
           avatarId: ref.watch(shopProvider).avatar,
@@ -924,22 +924,22 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           height: 168,
           modelScale: 1.25,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
                 color: StageBlack.text,
                 fontSize: 24,
                 fontWeight: FontWeight.w800)),
         if ((match.soundTitle ?? '').isNotEmpty)
           Text(t('“{n}”', {'n': t(match.soundTitle!)}),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.text, fontSize: 18)),
-        const SizedBox(height: 8),
+              style: TextStyle(color: StageBlack.text, fontSize: 18)),
+        SizedBox(height: 8),
         Text(
           t('اضغط الزر: ستستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وبعدها يُسجَّل تقليدك تلقائيًا.'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: StageBlack.muted, fontSize: 15),
+          style: TextStyle(color: StageBlack.muted, fontSize: 15),
         ),
         const SizedBox(height: 12),
         // ×2 must be armed BEFORE the take — it can never rewrite a grade
@@ -974,11 +974,11 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       TurnPhase.recording => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic, color: StageBlack.bad, size: 72),
-            const SizedBox(height: 8),
+            Icon(Icons.mic, color: StageBlack.bad, size: 72),
+            SizedBox(height: 8),
             Text(t('قلّد الآن'),
-                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
-            const SizedBox(height: 16),
+                style: TextStyle(color: StageBlack.text, fontSize: 20)),
+            SizedBox(height: 16),
             OverlayWaves(
               target: match.targetWave,
               attempt: _paddedLevels(match),
@@ -988,20 +988,20 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       TurnPhase.listening => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.hearing, color: StageBlack.text, size: 64),
+            Icon(Icons.hearing, color: StageBlack.text, size: 64),
             SizedBox(height: 12),
             Text(t('استمع… مرة واحدة'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
+                style: TextStyle(color: StageBlack.text, fontSize: 20)),
           ],
         ),
       _ => Text(t('دورك… جهّز نفسك'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: StageBlack.text, fontSize: 20)),
+          style: TextStyle(color: StageBlack.text, fontSize: 20)),
     };
     return _StageCard(children: [
       Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
-          style: const TextStyle(color: StageBlack.muted)),
+          style: TextStyle(color: StageBlack.muted)),
       const Spacer(),
       body,
       const Spacer(),
@@ -1295,7 +1295,7 @@ class _Handoff extends ConsumerWidget {
     return _StageCard(
       children: [
         Text(t('مرّر الهاتف إلى'),
-            style: const TextStyle(color: StageBlack.muted, fontSize: 18)),
+            style: TextStyle(color: StageBlack.muted, fontSize: 18)),
         const SizedBox(height: 16),
         AvatarView(
           avatarId: ref.watch(shopProvider).avatar,
@@ -1306,19 +1306,19 @@ class _Handoff extends ConsumerWidget {
         const SizedBox(height: 12),
         Text(me.name,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
                 color: StageBlack.text,
                 fontSize: 36,
                 fontWeight: FontWeight.w800)),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           t('الجولة {a} من {b}',
               {'a': game.roundIndex + 1, 'b': game.roundsTotal}),
-          style: const TextStyle(color: StageBlack.muted),
+          style: TextStyle(color: StageBlack.muted),
         ),
         if (game.challenge != null)
           Text(t('التحدي: {n}', {'n': t(game.challenge!.title)}),
-              style: const TextStyle(color: StageBlack.text)),
+              style: TextStyle(color: StageBlack.text)),
         const Spacer(),
         FilledButton.icon(
           style: FilledButton.styleFrom(
@@ -1378,31 +1378,31 @@ class _TurnStage extends StatelessWidget {
       TurnPhase.recording => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic, color: StageBlack.bad, size: 72),
-            const SizedBox(height: 8),
+            Icon(Icons.mic, color: StageBlack.bad, size: 72),
+            SizedBox(height: 8),
             Text(
               secondsLeft.toStringAsFixed(1),
-              style: const TextStyle(
+              style: TextStyle(
                   color: StageBlack.text,
                   fontSize: 64,
                   fontWeight: FontWeight.w800,
                   height: 1),
             ),
             Text(t('قلّد الآن'),
-                style: const TextStyle(color: StageBlack.muted, fontSize: 18)),
-            const SizedBox(height: 16),
+                style: TextStyle(color: StageBlack.muted, fontSize: 18)),
+            SizedBox(height: 16),
             OverlayWaves(target: wave, attempt: trace, height: 64),
           ],
         ),
       TurnPhase.listening => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.hearing, color: StageBlack.text, size: 64),
-            const SizedBox(height: 12),
+            Icon(Icons.hearing, color: StageBlack.text, size: 64),
+            SizedBox(height: 12),
             Text(status,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
-            const SizedBox(height: 16),
+                style: TextStyle(color: StageBlack.text, fontSize: 20)),
+            SizedBox(height: 16),
             if (wave.isNotEmpty)
               WaveformBars(
                   values: wave, progress: playProgress, color: StageBlack.text),
@@ -1412,19 +1412,19 @@ class _TurnStage extends StatelessWidget {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(color: StageBlack.gold),
+                CircularProgressIndicator(color: StageBlack.gold),
                 SizedBox(height: 12),
                 Text(t('نحسب درجة التقليد…'),
-                    style: const TextStyle(color: StageBlack.text, fontSize: 18)),
+                    style: TextStyle(color: StageBlack.text, fontSize: 18)),
               ],
             )
           : Text(status,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.text, fontSize: 20)),
+              style: TextStyle(color: StageBlack.text, fontSize: 20)),
     };
     return _StageCard(children: [
       Text(game.currentPlayer.name,
-          style: const TextStyle(color: StageBlack.muted)),
+          style: TextStyle(color: StageBlack.muted)),
       const Spacer(),
       body,
       const Spacer(),
@@ -1486,7 +1486,7 @@ class _RevealState extends ConsumerState<_Reveal> {
               if (_funny.isNotEmpty) ...[
                 Text(_funny,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: StageBlack.muted, fontSize: 15)),
                 const SizedBox(height: 4),
               ],
@@ -1495,7 +1495,7 @@ class _RevealState extends ConsumerState<_Reveal> {
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(t('✖️ ×2 مضاعفة'),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: StageBlack.gold,
                           fontSize: 14,
                           fontWeight: FontWeight.w800)),
@@ -1523,7 +1523,7 @@ class _RevealState extends ConsumerState<_Reveal> {
               ),
               if (leading)
                 Text(t('أعلى تقليد لهذا الصوت حتى الآن'),
-                    style: const TextStyle(color: StageBlack.gold)),
+                    style: TextStyle(color: StageBlack.gold)),
               const SizedBox(height: 8),
               RevealMeters(
                 kind: game.lastKind,
@@ -1533,17 +1533,17 @@ class _RevealState extends ConsumerState<_Reveal> {
                 timing: game.lastTiming ?? -1,
                 showValue: true,
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Text(t('مجموع {n}: {s}',
                   {'n': me.name, 's': me.score}),
-                  style: const TextStyle(color: StageBlack.text, fontSize: 16)),
+                  style: TextStyle(color: StageBlack.text, fontSize: 16)),
               if (score == 0)
                 Padding(
-                  padding: const EdgeInsets.only(top: 6),
+                  padding: EdgeInsets.only(top: 6),
                   child: Text(
                     t('لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: StageBlack.muted, fontSize: 13),
+                    style: TextStyle(color: StageBlack.muted, fontSize: 13),
                   ),
                 ),
               if (widget.targetWave.isNotEmpty &&
@@ -1659,7 +1659,7 @@ class _BoostPill extends StatelessWidget {
                 if (!armed) ...[
                   const SizedBox(width: 4),
                   Text(t('(المخزون {n})', {'n': stock}),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 11, color: StageBlack.muted)),
                 ],
               ]),
@@ -1703,18 +1703,18 @@ class _ReadyCard extends ConsumerWidget {
         armed: doubleArmed,
         onArm: doubleArmed || doubleStock <= 0 ? null : onDouble,
       ),
-      const Spacer(),
-      const Icon(Icons.hearing, color: StageBlack.text, size: 64),
-      const SizedBox(height: 12),
+      Spacer(),
+      Icon(Icons.hearing, color: StageBlack.text, size: 64),
+      SizedBox(height: 12),
       if (shown != null && shown.isNotEmpty)
         Text(t('“{n}”', {'n': t(shown)}),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: StageBlack.text, fontSize: 22)),
-      const SizedBox(height: 8),
+            style: TextStyle(color: StageBlack.text, fontSize: 22)),
+      SizedBox(height: 8),
       Text(
         t('اضغط الزر: تسمع الصوت مرة، تنتظر ٣ ثوانٍ، وبعدين يتسجل تقليدك تلقائيًا.'),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: StageBlack.muted, fontSize: 15),
+        style: TextStyle(color: StageBlack.muted, fontSize: 15),
       ),
       const SizedBox(height: 12),
       const Spacer(),
@@ -1790,7 +1790,7 @@ class _StageCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [StageBlack.elev, StageBlack.bg],
@@ -1849,7 +1849,7 @@ class _ReactionButton extends ConsumerWidget {
         ),
         const SizedBox(height: 2),
         Text('🪙$price',
-            style: const TextStyle(
+            style: TextStyle(
                 color: StageBlack.muted, fontSize: 11)),
       ],
     );

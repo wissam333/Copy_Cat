@@ -80,11 +80,11 @@ class ShopCatalog {
 
   /// Price per send. No free emoji.
   static const Map<String, int> emojiPrices = {
-    '😂': 10,
-    '👏': 10,
-    '😱': 15,
-    '🍅': 30,
-    '💩': 50,
+    '😂': 2,
+    '👏': 2,
+    '😱': 3,
+    '🍅': 4,
+    '💩': 6,
   };
 
   static const List<String> emojis = ['😂', '👏', '😱', '🍅', '💩'];

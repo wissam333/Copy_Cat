@@ -336,13 +336,13 @@ class _PawFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: StageBlack.panel,
           shape: BoxShape.circle,
           border: Border.all(color: StageBlack.gold, width: 1.5),
         ),
-        child: const Icon(Icons.pets, size: 40, color: StageBlack.gold),
+        child: Icon(Icons.pets, size: 40, color: StageBlack.gold),
       ),
     );
   }

@@ -89,13 +89,13 @@ class RevealMeters extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: EdgeInsets.only(top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(t(caption),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: StageBlack.gold, fontSize: 12)),
+              style: TextStyle(color: StageBlack.gold, fontSize: 12)),
           const SizedBox(height: 2),
           for (final r in rows) _MeterRow(row: r, showValue: showValue),
         ],
@@ -125,14 +125,14 @@ class _MeterRow extends StatelessWidget {
           Row(
             children: [
               Text(t(row.label),
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: StageBlack.text,
                       fontSize: 13,
                       fontWeight: FontWeight.w600)),
               const Spacer(),
               if (showValue)
                 Text('${value.round()}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: StageBlack.muted,
                         fontSize: 12,
                         fontFeatures: [FontFeature.tabularFigures()])),

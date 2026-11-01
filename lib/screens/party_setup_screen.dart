@@ -79,6 +79,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
     final game = ref.watch(gameProvider);
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('اللعب بموبايل واحد')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -100,7 +101,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
                   Text(
                     t('تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
                         'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.'),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14, height: 1.4, color: StageBlack.muted),
                   ),
                   const SizedBox(height: 8),
@@ -160,7 +161,7 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
                   if (_msg != null) ...[
                     Text(_msg!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 13, color: StageBlack.bad)),
                     const SizedBox(height: 8),
                   ],

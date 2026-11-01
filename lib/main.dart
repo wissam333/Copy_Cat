@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_router.dart';
 import 'services/identity_store.dart';
 import 'state/language.dart';
+import 'state/theme_mode.dart';
 import 'stage_theme.dart';
 
 Future<void> main() async {
@@ -26,6 +27,9 @@ Future<void> main() async {
             : WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'en'
                 ? AppLanguage.english
                 : AppLanguage.arabic;
+    // Same pattern for the theme: sync globals before the first frame.
+    currentThemeIsLight = prefs.getString('copycat.theme') == 'light';
+    StageBlack.setLight(currentThemeIsLight);
   } catch (_) {}
   runApp(const ProviderScope(child: MimicPartyApp()));
 }
@@ -36,6 +40,7 @@ class MimicPartyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(languageProvider);
+    ref.watch(themeProvider);
     return MaterialApp.router(
       title: 'Copy Cat',
       debugShowCheckedModeBanner: false,

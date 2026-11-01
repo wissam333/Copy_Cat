@@ -10,6 +10,7 @@ import '../state/coins.dart';
 import '../state/game_state.dart';
 import '../state/language.dart';
 import '../state/shop_store.dart';
+import '../state/theme_mode.dart';
 import '../widgets/avatar_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -75,10 +76,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: StageBlack.background(
         child: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(14),
             children: [
-              const SizedBox(height: 8),
-              // Wordmark row: gold-ring paw, title, tagline, language pill.
+              // Wordmark row: gold-ring paw, title, tagline, theme + language.
               Row(
                 children: [
                   Container(
@@ -89,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: StageBlack.gold, width: 1.5),
                     ),
-                    child: const Icon(Icons.pets,
+                    child: Icon(Icons.pets,
                         size: 22, color: StageBlack.gold),
                   ),
                   const SizedBox(width: 10),
@@ -97,19 +97,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Copy Cat',
+                        Text('Copy Cat',
                             style: TextStyle(
                                 fontFamily: StageBlack.displayFont,
                                 fontSize: 28,
                                 fontWeight: FontWeight.w700,
                                 color: StageBlack.text)),
                         Text(t('قلّد الصوت… واجمع النقاط!'),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 13, color: StageBlack.muted)),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
+                  // Theme toggle: icon shows the mode you'll switch to.
+                  IconButton(
+                    onPressed: () =>
+                        ref.read(themeProvider.notifier).set(!StageBlack.isLight),
+                    icon: Icon(StageBlack.isLight
+                        ? Icons.dark_mode_outlined
+                        : Icons.light_mode_outlined),
+                    color: StageBlack.text,
+                  ),
                   // Language pill: label always names the OTHER language.
                   InkWell(
                     onTap: () => ref
@@ -129,7 +138,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           currentLanguage == AppLanguage.english
                               ? 'عربي'
                               : 'EN',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: StageBlack.text)),
@@ -137,16 +146,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Text(
                 t(sounds == 0
                     ? 'سجّل صوتًا من ٢–٦ ثوانٍ في أصواتي، ثم العب.'
                     : 'لديك {n} أصوات. اختر:',
                     {'n': sounds}),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 14, height: 1.35, color: StageBlack.muted),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               // Way 1: this phone, passed around.
               _PlayPanel(
                 title: t('هذا الموبايل'),
@@ -158,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: const TextStyle(fontSize: 18)),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               // Way 2: same Wi-Fi, equal weight, two outlined actions.
               _PlayPanel(
                 title: t('نفس الواي فاي'),
@@ -171,17 +180,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         icon: const Icon(Icons.add_home),
                         label: Text(t('إنشاء غرفة')),
                         style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(56)),
+                            minimumSize: const Size.fromHeight(48)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => context.go('/lobby?host=0'),
                         icon: const Icon(Icons.group_add),
                         label: Text(t('انضمام')),
                         style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(56)),
+                            minimumSize: const Size.fromHeight(48)),
                       ),
                     ),
                   ],
@@ -223,64 +232,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   t('رصيدك {n} 🪙', {
                                     'n': ref.watch(coinsProvider)
                                   }),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 14,
                                       color: StageBlack.muted)),
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios,
+                        Icon(Icons.arrow_forward_ios,
                             size: 18, color: StageBlack.muted),
                       ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              // Name + room fields (cheat codes included).
+              const SizedBox(height: 10),
+              // Name + room fields on one row (cheat codes included).
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
-                      TextField(
-                        controller: _name,
-                        decoration: InputDecoration(
-                          labelText: t('اسمك'),
-                          prefixIcon: const Icon(Icons.person),
+                      Expanded(
+                        child: TextField(
+                          controller: _name,
+                          decoration: InputDecoration(
+                            labelText: t('اسمك'),
+                            prefixIcon: const Icon(Icons.person),
+                          ),
+                          onChanged: (v) {
+                            if (CheatCodes.codes.containsKey(v)) {
+                              _redeemCheat(v);
+                              return;
+                            }
+                            ref.read(gameProvider.notifier).setName(v);
+                          },
                         ),
-                        onChanged: (v) {
-                          if (CheatCodes.codes.containsKey(v)) {
-                            _redeemCheat(v);
-                            return;
-                          }
-                          ref.read(gameProvider.notifier).setName(v);
-                        },
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _room,
-                        decoration: InputDecoration(
-                          labelText: t('اسم الغرفة (للاستضافة)'),
-                          prefixIcon: const Icon(Icons.meeting_room),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _room,
+                          decoration: InputDecoration(
+                            labelText: t('اسم الغرفة'),
+                            prefixIcon: const Icon(Icons.meeting_room),
+                          ),
+                          onChanged: (v) =>
+                              ref.read(gameProvider.notifier).setRoom(v),
                         ),
-                        onChanged: (v) =>
-                            ref.read(gameProvider.notifier).setRoom(v),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Center(
-                child: Text(
-                  t('العب مع أصدقائك على نفس شبكة الواي فاي'),
-                  style: const TextStyle(
-                      fontSize: 12, color: StageBlack.muted),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Center(
                 child: Text(
                   'built by Wissam Najjom',
                   style: TextStyle(fontSize: 11, color: StageBlack.muted),
@@ -306,16 +311,16 @@ class _PlayPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(line,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, height: 1.35, color: StageBlack.muted)),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             child,
           ],
         ),

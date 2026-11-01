@@ -18,9 +18,9 @@ import '../widgets/sound_picker.dart';
 import '../widgets/ui_bits.dart';
 
 const _modeMeanings = {
-  GameMode.random: ('حفلة عشوائية', 'نجمع أصوات الجميع ونخلطها، ونلعب حتى ٥ جولات مفاجئة.'),
+  GameMode.random: ('حفلة عشوائية', 'نجمع أصوات الجميع ونخلطها، ونلعب جولات مفاجئة.'),
   GameMode.choice: ('اختيار اللاعب', 'كل لاعب يختار صوتًا مرة. الباقي يقلّدون أول، والمختار آخر واحد.'),
-  GameMode.host: ('تحدي المضيف', 'المضيف يرتّب ١–٥ أصوات من مكتبته والكل يقلّدها بالترتيب.'),
+  GameMode.host: ('تحدي المضيف', 'المضيف يرتّب أصواتًا من مكتبته والكل يقلّدها بالترتيب.'),
 };
 
 String modeTitle(GameMode m) => _modeMeanings[m]!.$1;
@@ -162,6 +162,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title:
             Text(widget.startAsHost ? t('غرفتك') : t('الانضمام لغرفة')),
         leading: IconButton(
@@ -218,7 +219,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(t('لا أحد بعد.'),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: StageBlack.muted, fontSize: 14)),
                 ),
               )
@@ -244,8 +245,54 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                     setState(() => _queueIds.clear());
                   },
                 ),
+              // Rounds selector: the host sets the match length; random
+              // rounds clamp to the sounds actually pooled at start.
+              if (match.mode != GameMode.choice) ...[
+                SectionTitle(t('عدد الجولات')),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.format_list_numbered),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(t('عدد الجولات'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () => setState(() {
+                            if (GameData.maxSoundsPerRound > 1) {
+                              GameData.maxSoundsPerRound--;
+                            }
+                          }),
+                        ),
+                        Text('${GameData.maxSoundsPerRound}',
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                fontFeatures: [
+                                  FontFeature.tabularFigures()
+                                ])),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: () => setState(() {
+                            if (GameData.maxSoundsPerRound < 20) {
+                              GameData.maxSoundsPerRound++;
+                            }
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               if (match.mode == GameMode.host) ...[
-                SectionTitle(t('أصوات التحدي (١–٥ بالترتيب)')),
+                SectionTitle(t('أصوات التحدي (١–{n} بالترتيب)',
+                    {'n': GameData.maxSoundsPerRound})),
                 SizedBox(
                   height: 260,
                   child: SoundPicker(
@@ -265,7 +312,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       } else if (_queueIds.length < GameData.maxSoundsPerRound) {
                         _queueIds.add(s.id);
                       } else {
-                        _msg = t('خمس جولات كافية');
+                        _msg = t('{n} جولات كافية',
+                            {'n': GameData.maxSoundsPerRound});
                       }
                     }),
                   ),
@@ -290,10 +338,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
             ],
             if (_msg != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: 8),
                 child: Text(_msg!,
                     style:
-                        const TextStyle(fontSize: 12, color: StageBlack.bad)),
+                        TextStyle(fontSize: 12, color: StageBlack.bad)),
               ),
             const SizedBox(height: 16),
             if (!widget.startAsHost)

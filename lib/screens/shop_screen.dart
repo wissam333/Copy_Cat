@@ -33,6 +33,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final preview = ShopCatalog.byId(previewId);
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('المتجر')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -148,7 +149,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       AvatarDef a, bool owned, bool equipped, int coins) {
     if (equipped) {
       return Chip(
-        avatar: const Icon(Icons.check, size: 18, color: StageBlack.ok),
+        avatar: Icon(Icons.check, size: 18, color: StageBlack.ok),
         label: Text(t('شخصيتك الحالية')),
       );
     }
@@ -207,12 +208,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         for (final e in ShopCatalog.emojis)
           Card(
             child: ListTile(
-              leading: Text(e, style: const TextStyle(fontSize: 32)),
+              leading: Text(e, style: TextStyle(fontSize: 32)),
               title: Text(t('🪙 {n} لكل إرسال',
                   {'n': ShopCatalog.emojiPrices[e]})),
               trailing: coins >= (ShopCatalog.emojiPrices[e] ?? 0)
-                  ? const Icon(Icons.check, color: StageBlack.ok)
-                  : const Icon(Icons.lock_outline,
+                  ? Icon(Icons.check, color: StageBlack.ok)
+                  : Icon(Icons.lock_outline,
                       color: StageBlack.muted),
             ),
           ),

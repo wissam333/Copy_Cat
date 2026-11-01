@@ -48,10 +48,10 @@ class _SplashScreenState extends State<SplashScreen> {
                   border: Border.all(color: StageBlack.gold, width: 1.5),
                 ),
                 child:
-                    const Icon(Icons.pets, size: 48, color: StageBlack.gold),
+                    Icon(Icons.pets, size: 48, color: StageBlack.gold),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Copy Cat',
                 style: TextStyle(
                   fontFamily: StageBlack.displayFont,
@@ -60,14 +60,14 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: StageBlack.text,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 t('قلّد الصوت… واجمع النقاط!'),
                 style:
-                    const TextStyle(fontSize: 16, color: StageBlack.muted),
+                    TextStyle(fontSize: 16, color: StageBlack.muted),
               ),
               const SizedBox(height: 32),
-              const SizedBox(
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(

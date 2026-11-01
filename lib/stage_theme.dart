@@ -2,28 +2,50 @@
 import 'package:flutter/material.dart';
 
 /// Stage Black: near-black stage, one voltage (gold), cream on dark.
+/// Stage Paper: its light sibling — warm paper, ink text, same gold.
+/// Tokens are mutable statics so the light/dark toggle can flip the whole
+/// app at runtime (same pattern as the language switch); call sites read
+/// them inside build, and the root rebuild repaints everything.
 /// Spec lives in design.md — restyle from tokens here, not hex per screen.
 class StageBlack {
   StageBlack._();
 
-  static const bg = Color(0xFF0A0A0F);
-  static const panel = Color(0xFF14141B);
-  static const elev = Color(0xFF1C1C26);
-  static const line = Color(0x14FFFFFF);
-  static const lineStrong = Color(0x3DFFFFFF);
-  static const gold = Color(0xFFE8B44C);
-  static const onGold = Color(0xFF14110A);
-  static const text = Color(0xFFF5F2EA);
-  static const muted = Color(0xFFA3A3B2);
-  static const ok = Color(0xFF3ECF8E);
-  static const bad = Color(0xFFE15D5D);
+  static bool isLight = false;
+
+  static Color bg = const Color(0xFF0A0A0F);
+  static Color panel = const Color(0xFF14141B);
+  static Color elev = const Color(0xFF1C1C26);
+  static Color line = const Color(0x14FFFFFF);
+  static Color lineStrong = const Color(0x3DFFFFFF);
+  static Color gold = const Color(0xFFE8B44C);
+  static Color onGold = const Color(0xFF14110A);
+  static Color text = const Color(0xFFF5F2EA);
+  static Color muted = const Color(0xFFA3A3B2);
+  static Color ok = const Color(0xFF3ECF8E);
+  static Color bad = const Color(0xFFE15D5D);
 
   static const displayFont = 'ReemKufi';
   static const uiFont = 'PlexArabic';
 
+  /// Flip every token between the dark stage and the light paper palette.
+  static void setLight(bool light) {
+    isLight = light;
+    bg = light ? const Color(0xFFF6F1E7) : const Color(0xFF0A0A0F);
+    panel = light ? const Color(0xFFFFFFFF) : const Color(0xFF14141B);
+    elev = light ? const Color(0xFFECE5D6) : const Color(0xFF1C1C26);
+    line = light ? const Color(0x14101010) : const Color(0x14FFFFFF);
+    lineStrong = light ? const Color(0x3D101010) : const Color(0x3DFFFFFF);
+    gold = light ? const Color(0xFFB8860B) : const Color(0xFFE8B44C);
+    onGold = light ? const Color(0xFFFFFBF0) : const Color(0xFF14110A);
+    text = light ? const Color(0xFF201D15) : const Color(0xFFF5F2EA);
+    muted = light ? const Color(0xFF6E695C) : const Color(0xFFA3A3B2);
+    ok = light ? const Color(0xFF1F8F63) : const Color(0xFF3ECF8E);
+    bad = light ? const Color(0xFFC44545) : const Color(0xFFE15D5D);
+  }
+
   static ThemeData get theme {
     final colorScheme = ColorScheme(
-      brightness: Brightness.dark,
+      brightness: isLight ? Brightness.light : Brightness.dark,
       primary: gold,
       onPrimary: onGold,
       secondary: gold,
@@ -45,7 +67,7 @@ class StageBlack {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      fontFamily: StageBlack.uiFont,
+      fontFamily: uiFont,
       scaffoldBackgroundColor: bg,
       appBarTheme: AppBarTheme(
         backgroundColor: bg,
@@ -53,9 +75,9 @@ class StageBlack {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: text),
-        titleTextStyle: const TextStyle(
-          fontFamily: StageBlack.uiFont,
+        iconTheme: IconThemeData(color: text),
+        titleTextStyle: TextStyle(
+          fontFamily: uiFont,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: text,
@@ -78,8 +100,8 @@ class StageBlack {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(
-            fontFamily: StageBlack.uiFont,
+          textStyle: TextStyle(
+            fontFamily: uiFont,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -88,13 +110,13 @@ class StageBlack {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: text,
-          side: const BorderSide(color: StageBlack.lineStrong),
+          side: BorderSide(color: lineStrong),
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(
-            fontFamily: StageBlack.uiFont,
+          textStyle: TextStyle(
+            fontFamily: uiFont,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -119,66 +141,61 @@ class StageBlack {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: StageBlack.gold),
+          borderSide: BorderSide(color: gold),
         ),
-        labelStyle: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 14, color: StageBlack.muted),
-        hintStyle: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 14, color: StageBlack.muted),
+        labelStyle: TextStyle(fontFamily: uiFont, fontSize: 14, color: muted),
+        hintStyle: TextStyle(fontFamily: uiFont, fontSize: 14, color: muted),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: StageBlack.elev,
-        labelStyle: const TextStyle(fontFamily: StageBlack.uiFont, fontSize: 14, color: StageBlack.text),
+        backgroundColor: elev,
+        labelStyle: TextStyle(fontFamily: uiFont, fontSize: 14, color: text),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        side: const BorderSide(color: StageBlack.line),
+        side: BorderSide(color: line),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: StageBlack.panel,
+        backgroundColor: panel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: const TextStyle(
-          fontFamily: StageBlack.uiFont,
+        titleTextStyle: TextStyle(
+          fontFamily: uiFont,
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: StageBlack.text,
+          color: text,
         ),
-        contentTextStyle: const TextStyle(
-          fontFamily: StageBlack.uiFont,
+        contentTextStyle: TextStyle(
+          fontFamily: uiFont,
           fontSize: 14,
-          color: StageBlack.text,
+          color: text,
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: StageBlack.elev,
-        contentTextStyle: const TextStyle(
-          fontFamily: StageBlack.uiFont,
+        backgroundColor: elev,
+        contentTextStyle: TextStyle(
+          fontFamily: uiFont,
           fontSize: 14,
-          color: StageBlack.text,
+          color: text,
         ),
         behavior: SnackBarBehavior.floating,
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: StageBlack.gold),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: gold),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected)
-                  ? StageBlack.gold
-                  : StageBlack.elev),
+              states.contains(WidgetState.selected) ? gold : elev),
           foregroundColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected)
-                  ? StageBlack.onGold
-                  : StageBlack.text),
-          side: WidgetStatePropertyAll(
-              BorderSide(color: StageBlack.lineStrong)),
+              states.contains(WidgetState.selected) ? onGold : text),
+          side: WidgetStatePropertyAll(BorderSide(color: lineStrong)),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: StageBlack.line),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(fontFamily: StageBlack.displayFont, fontSize: 40, fontWeight: FontWeight.w700, color: StageBlack.text, height: 1.0),
-        headlineMedium: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 22, fontWeight: FontWeight.w700, color: StageBlack.text),
-        titleLarge: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 18, fontWeight: FontWeight.w700, color: StageBlack.text),
-        titleMedium: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 16, fontWeight: FontWeight.w600, color: StageBlack.text),
-        bodyLarge: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 15, fontWeight: FontWeight.w400, color: StageBlack.text),
-        bodyMedium: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 14, fontWeight: FontWeight.w400, color: StageBlack.text),
-        labelLarge: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 14, fontWeight: FontWeight.w600, color: StageBlack.text),
-        labelSmall: TextStyle(fontFamily: StageBlack.uiFont, fontSize: 12, fontWeight: FontWeight.w500, color: StageBlack.muted),
+      dividerTheme: DividerThemeData(color: line),
+      textTheme: TextTheme(
+        displayLarge: TextStyle(fontFamily: displayFont, fontSize: 40, fontWeight: FontWeight.w700, color: text, height: 1.0),
+        headlineMedium: TextStyle(fontFamily: uiFont, fontSize: 22, fontWeight: FontWeight.w700, color: text),
+        titleLarge: TextStyle(fontFamily: uiFont, fontSize: 18, fontWeight: FontWeight.w700, color: text),
+        titleMedium: TextStyle(fontFamily: uiFont, fontSize: 16, fontWeight: FontWeight.w600, color: text),
+        bodyLarge: TextStyle(fontFamily: uiFont, fontSize: 15, fontWeight: FontWeight.w400, color: text),
+        bodyMedium: TextStyle(fontFamily: uiFont, fontSize: 14, fontWeight: FontWeight.w400, color: text),
+        labelLarge: TextStyle(fontFamily: uiFont, fontSize: 14, fontWeight: FontWeight.w600, color: text),
+        labelSmall: TextStyle(fontFamily: uiFont, fontSize: 12, fontWeight: FontWeight.w500, color: muted),
       ),
     );
   }
@@ -188,20 +205,17 @@ class StageBlack {
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        const Positioned.fill(
+        Positioned.fill(
           child: IgnorePointer(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: Alignment(0.0, -0.7),
+                  center: const Alignment(0.0, -0.7),
                   radius: 1.1,
-                  colors: [
-                    Color(0x29E8B44C), // gold at 16%
-                    Color(0x000A0A0F),
-                  ],
+                  colors: [gold.withValues(alpha: 0.16), bg.withValues(alpha: 0.0)],
                 ),
               ),
-              child: SizedBox.expand(),
+              child: const SizedBox.expand(),
             ),
           ),
         ),
@@ -209,4 +223,18 @@ class StageBlack {
       ],
     );
   }
+
+  /// The AppBar-strip slice of the page glow, so AppBar pages don't show
+  /// a dead black band above the glowing body (design.md page shell).
+  /// Drop into `AppBar(flexibleSpace: StageBlack.appBarGlow())`.
+  static Widget appBarGlow() => DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.0, -1.2),
+            radius: 1.6,
+            colors: [gold.withValues(alpha: 0.16), bg.withValues(alpha: 0.0)],
+          ),
+        ),
+        child: const SizedBox.expand(),
+      );
 }

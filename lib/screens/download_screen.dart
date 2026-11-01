@@ -512,6 +512,7 @@ final prov = t(_providerNames[_provider] ?? '');
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('تحميل أصوات')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -685,7 +686,7 @@ if (_provider == 'meme') ...[
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     child: Text(_msg!,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: StageBlack.muted)),
                   ),
                 ),
@@ -698,12 +699,12 @@ if (_provider == 'meme') ...[
                   padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      const Icon(Icons.search,
+                      Icon(Icons.search,
                           color: StageBlack.muted),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(t('فارغ.'),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: StageBlack.muted,
                                 fontSize: 14)),
                       ),
@@ -760,7 +761,7 @@ if (_provider == 'meme') ...[
                             onTap: () => _preview(clip),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.download,
+                            icon: Icon(Icons.download,
                                 color: StageBlack.gold),
                             onPressed:
                                 busy ? null : () => _add(clip),

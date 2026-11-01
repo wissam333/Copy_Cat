@@ -27,9 +27,7 @@ const Map<String, String> _en = {
   'شخصيتك — اضغط للمتجر': 'Your character — tap for the shop',
   'رصيدك {n} 🪙': 'Balance {n} 🪙',
   'اسمك': 'Your name',
-  'اسم الغرفة (للاستضافة)': 'Room name (for hosting)',
-  'العب مع أصدقائك على نفس شبكة الواي فاي':
-      'Play with friends on the same Wi-Fi network',
+  'اسم الغرفة': 'Room name',
   'نسخة طبق الأصل!': 'A perfect copy!',
   'أسطورة التقليد': 'Mimic legend',
   'تقليد قوي': 'Strong mimic',
@@ -130,11 +128,11 @@ const Map<String, String> _en = {
   'أثناء انتظار دور غيرك: أجبره على إعادة التقليد مرة':
       'While waiting for someone else: force one redo of their take',
   // lobby_screen
-  'نجمع أصوات الجميع ونخلطها، ونلعب حتى ٥ جولات مفاجئة.':
+  'نجمع أصوات الجميع ونخلطها، ونلعب جولات مفاجئة.':
       'We gather everyone\'s sounds, shuffle them, and play surprise rounds.',
   'كل لاعب يختار صوتًا مرة. الباقي يقلّدون أول، والمختار آخر واحد.':
       'Each player picks a sound once. Everyone else mimics it first; the picker goes last.',
-  'المضيف يرتّب ١–٥ أصوات من مكتبته والكل يقلّدها بالترتيب.':
+  'المضيف يرتّب أصواتًا من مكتبته والكل يقلّدها بالترتيب.':
       'The host orders sounds from their library; everyone mimics them in order.',
   'فشلت الاستضافة: {n}': 'Hosting failed: {n}',
   'جارٍ اكتشاف الغرف…': 'Scanning for rooms…',
@@ -153,8 +151,9 @@ const Map<String, String> _en = {
   'هذا أنت': "That's you",
   'متصل': 'Connected',
   'طريقة اللعب': 'Game Mode',
-  'أصوات التحدي (١–٥ بالترتيب)': 'Challenge sounds (in order)',
-  'خمس جولات كافية': 'Five rounds is plenty',
+  'أصوات التحدي (١–{n} بالترتيب)': 'Challenge sounds (1–{n}, in order)',
+  '{n} جولات كافية': '{n} rounds is plenty',
+  'عدد الجولات': 'Rounds',
   'غرف قريبة': 'Nearby Rooms',
   'ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)':
       'Waiting for another phone… (one-phone play is on the home page)',

@@ -173,22 +173,25 @@ class PlayerTile extends StatelessWidget {
 class CountdownView extends StatelessWidget {
   final int secondsLeft;
   final String caption;
-  final Color color;
+
+  /// Null falls back to the current palette's gold (defaults must be const).
+  final Color? color;
   const CountdownView({
     super.key,
     required this.secondsLeft,
     this.caption = 'استعد! يبدأ التسجيل خلال…',
-    this.color = StageBlack.gold,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final c = color ?? StageBlack.gold;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(t(caption),
             textAlign: TextAlign.center,
-            style: TextStyle(color: color, fontSize: 18)),
+            style: TextStyle(color: c, fontSize: 18)),
         const SizedBox(height: 16),
         Text(
           '$secondsLeft',
@@ -196,7 +199,7 @@ class CountdownView extends StatelessWidget {
             fontFamily: StageBlack.displayFont,
             fontSize: 84,
             fontWeight: FontWeight.w800,
-            color: color,
+            color: c,
             height: 1,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
@@ -463,8 +466,10 @@ class _OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (target.isEmpty || attempt.isEmpty) return;
-    const targetColor = Color(0x66F5F2EA); // cream at 40%
-    const attemptColor = Color(0xFFE8B44C); // gold
+    // Original in the current text color at 40%, attempt in gold — both
+    // stay visible on the dark stage and the light paper.
+    final targetColor = StageBlack.text.withValues(alpha: 0.4);
+    final attemptColor = StageBlack.gold;
     final barW = size.width / target.length;
     final paint = Paint()
       ..strokeCap = StrokeCap.round
@@ -873,25 +878,9 @@ class _DramaticScoreState extends State<DramaticScore>
       ),
       textAlign: TextAlign.center,
     );
-    final shout = AnimatedOpacity(
-      opacity: _landed ? 1 : 0,
-      duration: const Duration(milliseconds: 280),
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Text(
-          scoreLabel(widget.score),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: scoreColor(widget.score),
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
     final column = Column(
       mainAxisSize: MainAxisSize.min,
-      children: [number, shout],
+      children: [number],
     );
     if (!_landed) return column;
     return ScaleTransition(
@@ -922,7 +911,7 @@ class CoinChip extends ConsumerWidget {
           Container(
             width: 8,
             height: 8,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
                 color: StageBlack.gold, shape: BoxShape.circle),
           ),
           const SizedBox(width: 7),

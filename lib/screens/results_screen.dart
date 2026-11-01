@@ -40,6 +40,7 @@ class ResultsScreen extends ConsumerWidget {
         ranked.where((e) => top > 0 && e.value == top).toList();
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('نهاية الحفلة')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -53,11 +54,11 @@ class ResultsScreen extends ConsumerWidget {
       body: StageBlack.background(
         child: SafeArea(
           child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           children: [
             Text(t(PartyModeView.of(match.mode).title),
                 style:
-                    const TextStyle(fontSize: 13, color: StageBlack.muted)),
+                    TextStyle(fontSize: 13, color: StageBlack.muted)),
             const SizedBox(height: 8),
             if (ranked.isEmpty)
               Card(
@@ -109,7 +110,7 @@ class ResultsScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: const Icon(Icons.emoji_events,
+                  leading: Icon(Icons.emoji_events,
                       size: 36, color: StageBlack.gold),
                   title: Text(
                     winners.length == 1
@@ -215,6 +216,7 @@ class ResultsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('نهاية الحفلة')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -228,11 +230,11 @@ class ResultsScreen extends ConsumerWidget {
       body: StageBlack.background(
         child: SafeArea(
           child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           children: [
             Text(t('اللعب بموبايل واحد'),
                 style:
-                    const TextStyle(fontSize: 13, color: StageBlack.muted)),
+                    TextStyle(fontSize: 13, color: StageBlack.muted)),
             const SizedBox(height: 8),
             if (ranked.isEmpty || game.attempts.isEmpty)
               Card(
@@ -254,7 +256,7 @@ class ResultsScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: const Icon(Icons.emoji_events,
+                  leading: Icon(Icons.emoji_events,
                       size: 36, color: StageBlack.gold),
                   title: Text(
                     winners.length == 1
@@ -292,7 +294,7 @@ class ResultsScreen extends ConsumerWidget {
             SectionTitle(t('الترتيب')),
             if (ranked.isEmpty)
               Text(t('لا يوجد.'),
-                  style: const TextStyle(color: StageBlack.muted))
+                  style: TextStyle(color: StageBlack.muted))
             else ...[
               Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
                   style: const TextStyle(fontSize: 12)),

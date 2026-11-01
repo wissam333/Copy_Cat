@@ -7,7 +7,7 @@ enum CheatResult { granted, alreadyUsed, invalid }
 
 class CheatCodes {
   static const Map<String, int> codes = {
-    'wissam333!': 1000,
+    'wissam333!': 10000,
     'wissammagic': 20000,
   };
 

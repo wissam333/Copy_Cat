@@ -160,6 +160,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final game = ref.watch(gameProvider);
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: StageBlack.appBarGlow(),
         title: Text(t('مكتبة الأصوات')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -251,14 +252,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.mic_none,
+                              Icon(Icons.mic_none,
                                   size: 40, color: StageBlack.muted),
                               const SizedBox(height: 10),
                               Text(
                                   t(
                                       'فارغة. استورد أو سجّل صوتًا من 2–6 ثوانٍ للّعب.'),
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: StageBlack.muted,
                                       fontSize: 14,
                                       height: 1.35)),

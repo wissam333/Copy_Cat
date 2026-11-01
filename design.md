@@ -265,6 +265,11 @@ App bar, back home, coin chip.
 - On a phone, solo: splash → home → party → one-phone game through reveal → results. Library empty and non-empty. Shop tabs. Arabic and English. Look for overflow.
 - On a phone, LAN: from home, create room and join each open a lobby that matches this spec (room status, players, modes or nearby rooms, a clear primary). Start a match with a second phone if one is available and check the LAN header, a reveal, and LAN results. If no second phone, still confirm the lobby screens and that `_buildLan` is unchanged in behavior.
 
+## TODO
+
+- Update the launcher app icon (the icon tapped to open the game) so it
+  matches the Stage Black look: near-black rounded square, gold-ring paw.
+
 ## Running on this PC
 
 `storage.flutter-io.cn` and `storage.googleapis.com` do not resolve with the OS DNS. `android/build.gradle.kts` points Flutter engine artifacts at `http://127.0.0.1:8642/flutterio`. Start `node tool/maven_proxy.mjs` before `flutter run`. Phone device id used last time: `rs6dfmvk6xizhy85`. Launch with:

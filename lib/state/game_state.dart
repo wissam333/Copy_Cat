@@ -64,9 +64,9 @@ class AttemptRecord {
 }
 
 class GameData {
-  /// Challenge sounds a host may order per match; raise to run longer
-  /// surprise rounds (random/solo rounds cap).
-  static const int maxSoundsPerRound = 5;
+  /// Rounds per match (also the host-playlist pick cap). The lobby stepper
+  /// raises it before Start; random rounds clamp to the available sounds.
+  static int maxSoundsPerRound = 5;
 
   final String playerName;
   final String roomName;
