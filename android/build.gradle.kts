@@ -4,18 +4,22 @@
 // mirrors first. Huawei is primary (stable, on-demand proxy of google +
 // central), Aliyun secondary (it had an outage window during setup).
 // Official repos stay last as fallback.
+// CI (GitHub Actions sets CI=true) reaches the official repos directly,
+// so the machine-specific mirrors and the local proxy are skipped there.
 allprojects {
     repositories {
-        maven("https://repo.huaweicloud.com/repository/maven/")
-        maven("https://maven.aliyun.com/repository/google")
-        maven("https://maven.aliyun.com/repository/central")
-        maven("https://maven.aliyun.com/repository/gradle-plugin")
-        // Flutter engine artifacts (io.flutter). The CN host does not resolve
-        // on this machine's DNS, so Gradle goes through the local proxy
-        // (node tool/maven_proxy.mjs), which retries via public resolvers.
-        maven {
-            url = uri("http://127.0.0.1:8642/flutterio")
-            isAllowInsecureProtocol = true
+        if (System.getenv("CI") == null) {
+            maven("https://repo.huaweicloud.com/repository/maven/")
+            maven("https://maven.aliyun.com/repository/google")
+            maven("https://maven.aliyun.com/repository/central")
+            maven("https://maven.aliyun.com/repository/gradle-plugin")
+            // Flutter engine artifacts (io.flutter). The CN host does not resolve
+            // on this machine's DNS, so Gradle goes through the local proxy
+            // (node tool/maven_proxy.mjs), which retries via public resolvers.
+            maven {
+                url = uri("http://127.0.0.1:8642/flutterio")
+                isAllowInsecureProtocol = true
+            }
         }
         google()
         mavenCentral()
