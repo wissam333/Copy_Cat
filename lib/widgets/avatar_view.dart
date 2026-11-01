@@ -349,7 +349,7 @@ class _PawFallback extends StatelessWidget {
 }
 
 /// Cache version: bump when the models change so stale thumbs rebake.
-const _thumbCacheVersion = 2;
+const _thumbCacheVersion = 3;
 
 Future<File> _thumbFile(String avatarId) async {
   final dir = await getTemporaryDirectory();
@@ -402,12 +402,15 @@ class _BakedAvatarState extends State<BakedAvatar> {
       final image = await boundary.toImage(pixelRatio: 1.0);
       final bytes =
           await image.toByteData(format: ui.ImageByteFormat.png);
-      if (bytes == null || !mounted) return;
+      final data = bytes?.buffer.asUint8List();
+      if (data == null || data.length < 5000 || !mounted) return;
       final f = await _thumbFile(widget.avatarId);
-      await f.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      await f.writeAsBytes(data, flush: true);
       if (mounted) setState(() => _png = f);
     } catch (_) {
       // Keep the live view; it is already cheap (low tier, 8 fps).
+    } finally {
+      _baking = false;
     }
   }
 
@@ -415,7 +418,23 @@ class _BakedAvatarState extends State<BakedAvatar> {
   Widget build(BuildContext context) {
     final png = _png;
     if (png != null) {
-      return Image.file(png, fit: BoxFit.contain);
+      return Image.file(
+        png,
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) {
+          try { png.deleteSync(); } catch (_) {}
+          if (mounted) setState(() => _png = null);
+          return RepaintBoundary(
+            key: _shotKey,
+            child: AvatarView(
+              avatarId: widget.avatarId,
+              expand: true,
+              lightweight: true,
+              maxFrameRate: 8,
+            ),
+          );
+        },
+      );
     }
     // First sight: live view, and schedule one bake from it.
     Future.microtask(_bake);

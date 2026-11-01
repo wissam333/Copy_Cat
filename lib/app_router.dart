@@ -2,6 +2,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import 'app_refresh.dart';
 import 'screens/download_screen.dart';
 import 'screens/gameplay_screen.dart';
 import 'screens/home_screen.dart';
@@ -33,6 +34,7 @@ class _BackTo extends StatelessWidget {
 
 final appRouter = GoRouter(
   initialLocation: '/',
+  refreshListenable: appRefresh,
   routes: [
     GoRoute(
       path: '/',

@@ -4,6 +4,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../app_refresh.dart';
 import '../stage_theme.dart';
 
 /// Sync flag for main.dart and non-widget call sites.
@@ -20,6 +21,7 @@ class ThemeController extends Notifier<bool> {
     currentThemeIsLight = light;
     StageBlack.setLight(light);
     state = light;
+    appRefresh.refresh();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_key, light ? 'light' : 'dark');

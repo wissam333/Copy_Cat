@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../app_refresh.dart';
+
 enum AppLanguage { arabic, english }
 
 /// Synchronous language for the t() helper and non-widget call sites.
@@ -25,6 +27,7 @@ class LanguageController extends Notifier<AppLanguage> {
     if (lang == state) return;
     currentLanguage = lang;
     state = lang;
+    appRefresh.refresh();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(

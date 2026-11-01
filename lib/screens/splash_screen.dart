@@ -36,44 +36,46 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: StageBlack.background(
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: StageBlack.panel,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: StageBlack.gold, width: 1.5),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: StageBlack.panel,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: StageBlack.gold, width: 1.5),
+                  ),
+                  child:
+                      Icon(Icons.pets, size: 48, color: StageBlack.gold),
                 ),
-                child:
-                    Icon(Icons.pets, size: 48, color: StageBlack.gold),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Copy Cat',
-                style: TextStyle(
-                  fontFamily: StageBlack.displayFont,
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
-                  color: StageBlack.text,
+                const SizedBox(height: 24),
+                Text(
+                  'Copy Cat',
+                  style: TextStyle(
+                    fontFamily: StageBlack.displayFont,
+                    fontSize: 40,
+                    fontWeight: FontWeight.w700,
+                    color: StageBlack.text,
+                  ),
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                t('قلّد الصوت… واجمع النقاط!'),
-                style:
-                    TextStyle(fontSize: 16, color: StageBlack.muted),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                    color: StageBlack.gold, strokeWidth: 3),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  t('قلّد الصوت… واجمع النقاط!'),
+                  style: TextStyle(fontSize: 16, color: StageBlack.muted),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                      color: StageBlack.gold, strokeWidth: 3),
+                ),
+              ],
+            ),
           ),
         ),
       ),
