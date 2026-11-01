@@ -612,7 +612,7 @@ class HostEngine {
     final picked = <_OfferSound>[];
     for (final o in pool) {
       if (seen.add(o.id)) picked.add(o);
-      if (picked.length >= 5) break;
+      if (picked.length >= GameData.maxSoundsPerRound) break;
     }
     if (picked.isEmpty) return;
     _matchBeginRounds(picked.length);

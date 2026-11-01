@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../i18n.dart';
 import '../services/lan_socket_manager.dart';
+import '../stage_theme.dart';
 import '../state/client_engine.dart';
 import '../state/game_state.dart';
 import '../state/shop_store.dart';
@@ -168,13 +169,17 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           onPressed: _leave,
         ),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
+      body: StageBlack.background(
+        child: SafeArea(
+          child: Column(
           children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
             Card(
               color: match.locked
-                  ? Colors.grey.shade200
+                  ? StageBlack.elev
                   : Theme.of(context).colorScheme.primaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -209,7 +214,14 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
             ),
             SectionTitle(t('الهواتف في الغرفة')),
             if (match.order.isEmpty)
-              Text(t('لا أحد بعد.'))
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(t('لا أحد بعد.'),
+                      style: const TextStyle(
+                          color: StageBlack.muted, fontSize: 14)),
+                ),
+              )
             else
               for (final p in match.order)
                 PlayerTile(
@@ -250,7 +262,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                     onTap: (s) => setState(() {
                       if (_queueIds.contains(s.id)) {
                         _queueIds.remove(s.id);
-                      } else if (_queueIds.length < 5) {
+                      } else if (_queueIds.length < GameData.maxSoundsPerRound) {
                         _queueIds.add(s.id);
                       } else {
                         _msg = t('خمس جولات كافية');
@@ -280,28 +292,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(_msg!,
-                    style: const TextStyle(fontSize: 12)),
+                    style:
+                        const TextStyle(fontSize: 12, color: StageBlack.bad)),
               ),
             const SizedBox(height: 16),
-            if (widget.startAsHost)
-              FilledButton.icon(
-                onPressed: (canStart && !_busy) ? _startMatch : null,
-                icon: const Icon(Icons.play_arrow, size: 26),
-                label: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                        match.order.length < 2
-                            ? t('ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)')
-                            : match.mode == GameMode.host &&
-                                    _queueIds.isEmpty
-                                ? t('اختر صوتًا أولًا')
-                                : t('ابدأ اللعب'),
-                      style: const TextStyle(fontSize: 18)),
-                ),
-                style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(60)),
-              )
-            else
+            if (!widget.startAsHost)
               OutlinedButton.icon(
                 onPressed: _leave,
                 icon: const Icon(Icons.logout),
@@ -318,8 +313,36 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 padding: EdgeInsets.only(top: 8),
                 child: LinearProgressIndicator(),
               ),
+              ],
+            ),
+            ),
+            // Gold start pinned outside the list (spec): survives a long
+            // player list, disabled stays visible with the reason as label.
+            if (widget.startAsHost)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: Builder(builder: (context) {
+                  final enabled = canStart && !_busy;
+                  final btn = FilledButton.icon(
+                    onPressed: enabled ? _startMatch : null,
+                    icon: const Icon(Icons.play_arrow, size: 26),
+                    label: Text(
+                        match.order.length < 2
+                            ? t('ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)')
+                            : match.mode == GameMode.host &&
+                                    _queueIds.isEmpty
+                                ? t('اختر صوتًا أولًا')
+                                : t('ابدأ اللعب'),
+                        style: const TextStyle(fontSize: 18)),
+                    style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(60)),
+                  );
+                  return enabled ? btn : Opacity(opacity: 0.4, child: btn);
+                }),
+              ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -342,6 +365,11 @@ class _ModeCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Card(
       color: selected ? scheme.primaryContainer : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+            color: selected ? scheme.primary : scheme.outlineVariant),
+      ),
       child: ListTile(
         leading: Icon(
           selected
@@ -422,7 +450,6 @@ class _JoinSection extends ConsumerWidget {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         hintText: '192.168.43.1',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                   ),

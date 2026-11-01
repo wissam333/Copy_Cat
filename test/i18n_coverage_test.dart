@@ -19,7 +19,10 @@ void main() {
     // Shown as-is by design: the toggle pill offers the OTHER language.
     const exemptLiterals = {'عربي'};
     // Translates via parallel EN arrays, not the map.
-    const exemptFiles = {'lib\\funny_lines.dart', 'lib/i18n.dart'};
+    const exemptFiles = {
+      'lib\\funny_lines.dart',
+      'lib/i18n.dart',
+    };
 
     // A maximal run of adjacent string literals (Dart concatenates them,
     // so the runtime key is the joined text).

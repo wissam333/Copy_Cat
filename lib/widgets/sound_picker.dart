@@ -35,8 +35,12 @@ class SoundPicker extends StatelessWidget {
         final order = selectedIds.indexOf(sound.id);
         final selected = order >= 0;
         return Material(
-          color: selected ? scheme.primaryContainer : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: selected ? scheme.primaryContainer : scheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+                color: selected ? scheme.primary : scheme.outlineVariant),
+          ),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () => onTap(sound),
@@ -48,7 +52,8 @@ class SoundPicker extends StatelessWidget {
                     backgroundColor: selected
                         ? scheme.primary
                         : scheme.surfaceContainerHighest,
-                    foregroundColor: selected ? Colors.white : scheme.primary,
+                    foregroundColor:
+                        selected ? scheme.onPrimary : scheme.primary,
                     child: Text(selected ? '${order + 1}' : '${i + 1}'),
                   ),
                   const SizedBox(width: 12),

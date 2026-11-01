@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/celebration.dart';
 import '../i18n.dart';
+import '../stage_theme.dart';
 import '../services/sfx.dart';
 import '../state/coins.dart';
 import '../state/game_state.dart';
@@ -25,10 +26,10 @@ String scoreLabel(double score) {
 }
 
 Color scoreColor(double score) {
-  if (score >= 85) return const Color(0xFF059669);
-  if (score >= 55) return const Color(0xFFD97706);
-  if (score > 0) return const Color(0xFFDC2626);
-  return const Color(0xFF6B7280);
+  if (score >= 80) return StageBlack.ok;
+  if (score >= 50) return StageBlack.gold;
+  if (score > 0) return StageBlack.bad;
+  return StageBlack.muted;
 }
 
 Color playerColor(String id) {
@@ -108,7 +109,10 @@ class AppButton extends ConsumerWidget {
             icon: Icon(icon),
             label: Text(label),
           );
-    return SizedBox(width: double.infinity, child: btn);
+    // Disabled keeps its shape at 40% opacity (spec), not Material grey.
+    return SizedBox(
+        width: double.infinity,
+        child: tap == null ? Opacity(opacity: 0.4, child: btn) : btn);
   }
 }
 
@@ -174,7 +178,7 @@ class CountdownView extends StatelessWidget {
     super.key,
     required this.secondsLeft,
     this.caption = 'استعد! يبدأ التسجيل خلال…',
-    this.color = Colors.white,
+    this.color = StageBlack.gold,
   });
 
   @override
@@ -189,10 +193,12 @@ class CountdownView extends StatelessWidget {
         Text(
           '$secondsLeft',
           style: TextStyle(
+            fontFamily: StageBlack.displayFont,
             fontSize: 84,
             fontWeight: FontWeight.w800,
             color: color,
             height: 1,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
@@ -221,7 +227,7 @@ class PlayerAvatar extends StatelessWidget {
       child: Text(
         letter,
         style: TextStyle(
-          color: Colors.white,
+          color: StageBlack.text,
           fontSize: radius * 0.85,
           fontWeight: FontWeight.bold,
         ),
@@ -245,7 +251,12 @@ class ModeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: selected ? scheme.primaryContainer : Colors.white,
+      color: selected ? scheme.primaryContainer : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+            color: selected ? scheme.primary : scheme.outlineVariant),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
@@ -267,7 +278,10 @@ class ModeCard extends StatelessWidget {
                             fontSize: 17, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
                     Text(t(mode.blurb),
-                        style: const TextStyle(fontSize: 13, height: 1.35)),
+                        style: TextStyle(
+                            fontSize: 13,
+                            height: 1.35,
+                            color: scheme.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -301,12 +315,14 @@ class ScoreRow extends StatelessWidget {
         : '${score.toStringAsFixed(0)}/100';
     return ListTile(
       leading: Icon(winner ? Icons.emoji_events : Icons.person,
-          color: winner ? Colors.amber[700] : null),
+          color: winner ? StageBlack.gold : null),
       title: Text(name,
           style: winner
               ? const TextStyle(fontWeight: FontWeight.bold)
               : null),
-      trailing: Text(label, style: Theme.of(context).textTheme.titleMedium),
+      trailing: Text(label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()])),
     );
   }
 }
@@ -397,8 +413,8 @@ class _WavePainter extends CustomPainter {
       old.values != values || old.progress != progress;
 }
 
-/// Two waveforms on top of each other: the original in blue, the
-/// player's attempt in orange. Both resampled to the same bucket count
+/// Two waveforms on top of each other: the original in cream at 40%,
+/// the player's attempt in gold. Both resampled to the same bucket count
 /// so different lengths still line up.
 class OverlayWaves extends StatelessWidget {
   final List<double> target;
@@ -447,13 +463,13 @@ class _OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (target.isEmpty || attempt.isEmpty) return;
-    const targetColor = Color(0xFF38BDF8);
-    const attemptColor = Color(0xFFFB923C);
+    const targetColor = Color(0x66F5F2EA); // cream at 40%
+    const attemptColor = Color(0xFFE8B44C); // gold
     final barW = size.width / target.length;
     final paint = Paint()
       ..strokeCap = StrokeCap.round
       ..strokeWidth = (barW * 0.42).clamp(1.0, 5.0);
-    // Blue first (behind), orange on top.
+    // Cream first (behind), gold on top.
     for (final entry in [
       (target, targetColor),
       (attempt, attemptColor),
@@ -820,24 +836,42 @@ class _DramaticScoreState extends State<DramaticScore>
 
   @override
   Widget build(BuildContext context) {
-    final color = _landed ? scoreColor(widget.score) : Colors.white;
-    final number = Text(
-      '${_display.round()}/100',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: color,
-        fontSize: _landed ? 88 : 72,
-        fontWeight: FontWeight.w900,
-        height: 1,
-        shadows: _landed
-            ? [
-                Shadow(
-                  color: color.withValues(alpha: 0.85),
-                  blurRadius: 28,
-                ),
-              ]
-            : const [],
+    final scheme = Theme.of(context).colorScheme;
+    final numberColor = _landed ? scheme.primary : scheme.onSurface;
+    final number = Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '${_display.round()}',
+            style: TextStyle(
+              color: numberColor,
+              fontFamily: StageBlack.displayFont,
+              fontSize: _landed ? 88 : 72,
+              fontWeight: FontWeight.w700,
+              height: 1,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              shadows: _landed
+                  ? [
+                      Shadow(
+                        color: numberColor.withValues(alpha: 0.85),
+                        blurRadius: 28,
+                      ),
+                    ]
+                  : const [],
+            ),
+          ),
+          TextSpan(
+            text: '/100',
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
       ),
+      textAlign: TextAlign.center,
     );
     final shout = AnimatedOpacity(
       opacity: _landed ? 1 : 0,
@@ -848,7 +882,7 @@ class _DramaticScoreState extends State<DramaticScore>
           scoreLabel(widget.score),
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: color,
+            color: scoreColor(widget.score),
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -876,12 +910,28 @@ class CoinChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final coins = ref.watch(coinsProvider);
-    return Chip(
-      avatar: const Icon(Icons.monetization_on,
-          size: 18, color: Colors.amber),
-      label: Text('$coins',
-          style: const TextStyle(fontWeight: FontWeight.bold)),
-      visualDensity: VisualDensity.compact,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+                color: StageBlack.gold, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 7),
+          Text('$coins',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: [FontFeature.tabularFigures()])),
+        ],
+      ),
     );
   }
 }

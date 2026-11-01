@@ -1,7 +1,7 @@
 name: copy_cat
 description: "Mimic Party — offline local-LAN voice mimic game."
 publish_to: 'none'
-version: 1.1.6+8
+version: 1.1.7+9
 
 environment:
   sdk: ^3.13.2
@@ -48,6 +48,20 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Stage Black type pairing (OFL, bundled — runtime stays offline).
+  fonts:
+    - family: ReemKufi
+      fonts:
+        - asset: assets/fonts/ReemKufi.ttf
+    - family: PlexArabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700
 
   # Tiny synthesized UI sounds (see tool temp gen_sfx.dart).
   assets:

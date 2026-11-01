@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
+import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../widgets/ui_bits.dart';
 
@@ -84,65 +85,103 @@ class _PartySetupScreenState extends ConsumerState<PartySetupScreen> {
           onPressed: () => context.go('/home'),
         ),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      body: StageBlack.background(
+        child: SafeArea(
+          child: Column(
           children: [
-            Text(t('من سيلعب؟'),
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(
-              t('تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
-                  'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.'),
-              style: const TextStyle(height: 1.4),
-            ),
-            const SizedBox(height: 8),
-            Text(
-                t('أصواتك الجاهزة: {n}', {'n': game.library.length}),
-                style: const TextStyle(fontSize: 13)),
-            const SizedBox(height: 12),
-            for (final p in game.players)
-              Card(
-                child: ListTile(
-                  leading: PlayerAvatar(name: p.name, id: p.id, radius: 20),
-                  title: Text(p.name),
-                  subtitle: Text(p.isHost ? t('أنت') : t('مشارك')),
-                  onTap: () => _rename(p.id, p.name),
-                  trailing: game.players.length > 1
-                      ? IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => ref
-                              .read(gameProvider.notifier)
-                              .removePlayer(p.id),
-                        )
-                      : null,
-                ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                children: [
+                  Text(t('من سيلعب؟'),
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Text(
+                    t('تناوبوا على الهاتف؛ يمسكه كل لاعب عند دوره. '
+                        'تستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وتقلّد، وتحصل على نقاطك.'),
+                    style: const TextStyle(
+                        fontSize: 14, height: 1.4, color: StageBlack.muted),
+                  ),
+                  const SizedBox(height: 8),
+                  // Ready-sound count as a pill.
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: StageBlack.lineStrong),
+                      ),
+                      child: Text(
+                          t('أصواتك الجاهزة: {n}',
+                              {'n': game.library.length}),
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontFeatures: [FontFeature.tabularFigures()])),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  for (final p in game.players)
+                    Card(
+                      child: ListTile(
+                        leading:
+                            PlayerAvatar(name: p.name, id: p.id, radius: 20),
+                        title: Text(p.name),
+                        subtitle: Text(p.isHost ? t('أنت') : t('مشارك')),
+                        onTap: () => _rename(p.id, p.name),
+                        trailing: game.players.length > 1
+                            ? IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => ref
+                                    .read(gameProvider.notifier)
+                                    .removePlayer(p.id),
+                              )
+                            : null,
+                      ),
+                    ),
+                  OutlinedButton.icon(
+                    onPressed:
+                        game.players.length >= 5 ? null : _addPlayer,
+                    icon: const Icon(Icons.person_add),
+                    label: Text(t('أضف لاعب')),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-            OutlinedButton.icon(
-              onPressed: game.players.length >= 5 ? null : _addPlayer,
-              icon: const Icon(Icons.person_add),
-              label: Text(t('أضف لاعب')),
             ),
-            if (_msg != null) ...[
-              const SizedBox(height: 12),
-              Text(_msg!, style: const TextStyle(fontSize: 13)),
-            ],
-            const SizedBox(height: 16),
-            if (game.library.isEmpty)
-              AppButton(
-                label: t('أضف أصوات من المكتبة'),
-                icon: Icons.library_music,
-                onPressed: () => context.go('/library'),
-              )
-            else
-              AppButton(
-                label: t('لنبدأ'),
-                icon: Icons.play_arrow,
-                onPressed: _start,
+            // Pinned gold start: survives a long player list.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_msg != null) ...[
+                    Text(_msg!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 13, color: StageBlack.bad)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (game.library.isEmpty)
+                    AppButton(
+                      label: t('أضف أصوات من المكتبة'),
+                      icon: Icons.library_music,
+                      onPressed: () => context.go('/library'),
+                    )
+                  else
+                    AppButton(
+                      label: t('لنبدأ'),
+                      icon: Icons.play_arrow,
+                      onPressed: _start,
+                    ),
+                ],
               ),
+            ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -183,8 +222,6 @@ class _NameDialogState extends State<_NameDialog> {
         controller: _controller,
         autofocus: true,
         textInputAction: TextInputAction.done,
-        decoration:
-            const InputDecoration(border: OutlineInputBorder()),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [

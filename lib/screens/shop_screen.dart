@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
 import '../services/shop_catalog.dart';
+import '../stage_theme.dart';
 import '../state/coins.dart';
 import '../state/shop_store.dart';
 import '../widgets/avatar_view.dart';
@@ -39,7 +40,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ),
         actions: const [CoinChip(), SizedBox(width: 8)],
       ),
-      body: Column(
+      body: StageBlack.background(
+        child: SafeArea(
+          child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -71,6 +74,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     : _powerTab(coins, shop),
           ),
         ],
+      ),
+      ),
       ),
     );
   }
@@ -142,7 +147,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget _buyEquipButton(
       AvatarDef a, bool owned, bool equipped, int coins) {
     if (equipped) {
-      return Chip(label: Text(t('شخصيتك الحالية')));
+      return Chip(
+        avatar: const Icon(Icons.check, size: 18, color: StageBlack.ok),
+        label: Text(t('شخصيتك الحالية')),
+      );
     }
     if (owned) {
       return FilledButton.icon(
@@ -152,13 +160,19 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         label: Text(t('جهّز هذه الشخصية')),
       );
     }
-    return FilledButton.icon(
-      onPressed: coins >= a.price ? () => _buy(a) : null,
-      icon: const Text('🪙'),
-      label: Text(coins >= a.price
-          ? t('اشترِ بـ {n}', {'n': a.price})
-          : t('ينقصك {n} — العب لتجمع', {'n': a.price - coins})),
-    );
+    // Gold when affordable; a visible outlined-disabled row when not.
+    return coins >= a.price
+        ? FilledButton.icon(
+            onPressed: () => _buy(a),
+            icon: const Text('🪙'),
+            label: Text(t('اشترِ بـ {n}', {'n': a.price})),
+          )
+        : OutlinedButton.icon(
+            onPressed: null,
+            icon: const Text('🪙'),
+            label: Text(t('ينقصك {n} — العب لتجمع',
+                {'n': a.price - coins})),
+          );
   }
 
   Future<void> _buy(AvatarDef a) async {
@@ -197,8 +211,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               title: Text(t('🪙 {n} لكل إرسال',
                   {'n': ShopCatalog.emojiPrices[e]})),
               trailing: coins >= (ShopCatalog.emojiPrices[e] ?? 0)
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : const Icon(Icons.lock_outline, color: Colors.grey),
+                  ? const Icon(Icons.check, color: StageBlack.ok)
+                  : const Icon(Icons.lock_outline,
+                      color: StageBlack.muted),
             ),
           ),
       ],
@@ -252,16 +267,19 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   Text(t(p.hint),
                       style: const TextStyle(height: 1.35, fontSize: 13)),
                   const SizedBox(height: 10),
-                  FilledButton.icon(
-                    onPressed: coins >= p.price
-                        ? () => _buyPower(p)
-                        : null,
-                    icon: const Text('🪙'),
-                    label: Text(coins >= p.price
-                        ? t('اشترِ بـ {n}', {'n': p.price})
-                        : t('ينقصك {n} — العب لتجمع',
-                            {'n': p.price - coins})),
-                  ),
+                  coins >= p.price
+                      ? FilledButton.icon(
+                          onPressed: () => _buyPower(p),
+                          icon: const Text('🪙'),
+                          label: Text(
+                              t('اشترِ بـ {n}', {'n': p.price})),
+                        )
+                      : OutlinedButton.icon(
+                          onPressed: null,
+                          icon: const Text('🪙'),
+                          label: Text(t('ينقصك {n} — العب لتجمع',
+                              {'n': p.price - coins})),
+                        ),
                 ],
               ),
             ),

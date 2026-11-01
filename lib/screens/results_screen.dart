@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
+import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../state/host_engine.dart';
 import '../state/shop_store.dart';
@@ -49,13 +50,14 @@ class ResultsScreen extends ConsumerWidget {
           SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
+      body: StageBlack.background(
+        child: SafeArea(
+          child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Text(t(PartyModeView.of(match.mode).title),
                 style:
-                    const TextStyle(fontWeight: FontWeight.w700)),
+                    const TextStyle(fontSize: 13, color: StageBlack.muted)),
             const SizedBox(height: 8),
             if (ranked.isEmpty)
               Card(
@@ -107,7 +109,8 @@ class ResultsScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: const Icon(Icons.emoji_events, size: 36),
+                  leading: const Icon(Icons.emoji_events,
+                      size: 36, color: StageBlack.gold),
                   title: Text(
                     winners.length == 1
                         ? t('الفائز: {n}',
@@ -127,17 +130,27 @@ class ResultsScreen extends ConsumerWidget {
             SectionTitle(t('الترتيب')),
             Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
                 style: const TextStyle(fontSize: 12)),
-            for (final e in ranked)
-              // 🛡️ badge: a shielded player's total already excludes their
-              // worst round — named so the sum mismatch is explainable.
-              ScoreRow(
-                name: match.shields[e.key] == true
-                    ? '🛡️ ${nameOf(e.key)}'
-                    : nameOf(e.key),
-                score: e.value,
-                winner: top > 0 && e.value == top,
-                points: true,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  children: [
+                    for (final e in ranked)
+                      // 🛡️ badge: a shielded player's total already excludes
+                      // their worst round — named so the sum mismatch is
+                      // explainable.
+                      ScoreRow(
+                        name: match.shields[e.key] == true
+                            ? '🛡️ ${nameOf(e.key)}'
+                            : nameOf(e.key),
+                        score: e.value,
+                        winner: top > 0 && e.value == top,
+                        points: true,
+                      ),
+                  ],
+                ),
               ),
+            ),
             if (match.roundsTotal > 0) SectionTitle(t('الجولات')),
             for (var r = 0; r < match.roundsTotal; r++) ...[
               Text(t('الجولة {n}', {'n': r + 1}),
@@ -185,6 +198,7 @@ class ResultsScreen extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -211,12 +225,14 @@ class ResultsScreen extends ConsumerWidget {
           SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
+      body: StageBlack.background(
+        child: SafeArea(
+          child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Text(t('اللعب بموبايل واحد'),
-                style: const TextStyle(fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 13, color: StageBlack.muted)),
             const SizedBox(height: 8),
             if (ranked.isEmpty || game.attempts.isEmpty)
               Card(
@@ -238,7 +254,8 @@ class ResultsScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: const Icon(Icons.emoji_events, size: 36),
+                  leading: const Icon(Icons.emoji_events,
+                      size: 36, color: StageBlack.gold),
                   title: Text(
                     winners.length == 1
                         ? t('الفائز: {n}', {'n': winners.first.name})
@@ -274,17 +291,27 @@ class ResultsScreen extends ConsumerWidget {
             ],
             SectionTitle(t('الترتيب')),
             if (ranked.isEmpty)
-              Text(t('لا يوجد.'))
+              Text(t('لا يوجد.'),
+                  style: const TextStyle(color: StageBlack.muted))
             else ...[
               Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
                   style: const TextStyle(fontSize: 12)),
-              for (final p in ranked)
-                ScoreRow(
-                  name: p.name,
-                  score: p.score.toDouble(),
-                  winner: top > 0 && p.score == top,
-                  points: true,
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    children: [
+                      for (final p in ranked)
+                        ScoreRow(
+                          name: p.name,
+                          score: p.score.toDouble(),
+                          winner: top > 0 && p.score == top,
+                          points: true,
+                        ),
+                    ],
+                  ),
                 ),
+              ),
             ],
             if (rounds.isNotEmpty) SectionTitle(t('الجولات')),
             for (final round in rounds) ...[
@@ -315,6 +342,7 @@ class ResultsScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

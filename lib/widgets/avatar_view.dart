@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 import '../services/shop_catalog.dart';
+import '../stage_theme.dart';
 
 class AvatarView extends StatefulWidget {
   final String avatarId;
@@ -336,12 +337,12 @@ class _PawFallback extends StatelessWidget {
     return Center(
       child: Container(
         padding: const EdgeInsets.all(10),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: StageBlack.panel,
           shape: BoxShape.circle,
+          border: Border.all(color: StageBlack.gold, width: 1.5),
         ),
-        child: Icon(Icons.pets,
-            size: 40, color: Theme.of(context).colorScheme.primary),
+        child: const Icon(Icons.pets, size: 40, color: StageBlack.gold),
       ),
     );
   }

@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 
 import '../i18n.dart';
+import '../stage_theme.dart';
 
 class _AxisRow {
   final String label;
@@ -65,6 +66,10 @@ class RevealMeters extends StatelessWidget {
   final double energy;
   final double timing;
 
+  /// Reveal screens show the grade number next to the label; other
+  /// callers keep the bar-only row.
+  final bool showValue;
+
   const RevealMeters({
     super.key,
     required this.kind,
@@ -72,6 +77,7 @@ class RevealMeters extends StatelessWidget {
     this.timbre = -1,
     this.energy = -1,
     this.timing = -1,
+    this.showValue = false,
   });
 
   @override
@@ -89,9 +95,9 @@ class RevealMeters extends StatelessWidget {
         children: [
           Text(t(caption),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.amber, fontSize: 12)),
+              style: const TextStyle(color: StageBlack.gold, fontSize: 12)),
           const SizedBox(height: 2),
-          for (final r in rows) _MeterRow(row: r),
+          for (final r in rows) _MeterRow(row: r, showValue: showValue),
         ],
       ),
     );
@@ -100,38 +106,46 @@ class RevealMeters extends StatelessWidget {
 
 class _MeterRow extends StatelessWidget {
   final _AxisRow row;
-  const _MeterRow({required this.row});
+  final bool showValue;
+  const _MeterRow({required this.row, this.showValue = false});
 
   static Color _gradeColor(double v) => v >= 80
-      ? Colors.greenAccent
-      : (v >= 50 ? Colors.amber : Colors.redAccent);
+      ? StageBlack.ok
+      : (v >= 50 ? StageBlack.gold : StageBlack.bad);
 
   @override
   Widget build(BuildContext context) {
     final value = row.value.clamp(0.0, 100.0);
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            width: 96,
-            child: Text(t(row.label),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700)),
+          Row(
+            children: [
+              Text(t(row.label),
+                  style: const TextStyle(
+                      color: StageBlack.text,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
+              const Spacer(),
+              if (showValue)
+                Text('${value.round()}',
+                    style: const TextStyle(
+                        color: StageBlack.muted,
+                        fontSize: 12,
+                        fontFeatures: [FontFeature.tabularFigures()])),
+            ],
           ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: row.value < 0 ? 0 : value / 100,
-                minHeight: 9,
-                backgroundColor: Colors.white24,
-                color: _gradeColor(value),
-              ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: row.value < 0 ? 0 : value / 100,
+              minHeight: 8,
+              backgroundColor: scheme.outlineVariant,
+              color: _gradeColor(value),
             ),
           ),
         ],

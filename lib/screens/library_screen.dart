@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../i18n.dart';
 import '../services/pitch_extractor.dart';
+import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../widgets/sprite_button.dart';
 import '../widgets/ui_bits.dart';
@@ -165,8 +166,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           onPressed: () => context.go('/home'),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
+      body: StageBlack.background(
+        child: SafeArea(
+          child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
@@ -174,20 +176,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: _busy ? null : _import,
-                      icon: const Icon(Icons.upload_file),
-                      label: Text(t('استيراد (2–6 ثوانٍ)')),
+                      onPressed: (_busy || _recording) ? null : _record,
+                      icon: Icon(_recording ? Icons.stop : Icons.mic,
+                          color: _recording ? StageBlack.bad : null),
+                      label: Text(_recording
+                          ? t('جارٍ التسجيل…')
+                          : t('تسجيل {n} ث', {'n': _recordSeconds})),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: (_busy || _recording) ? null : _record,
-                      icon: Icon(
-                          _recording ? Icons.stop : Icons.mic),
-                      label: Text(_recording
-                          ? t('جارٍ التسجيل…')
-                          : t('تسجيل {n} ث', {'n': _recordSeconds})),
+                      onPressed: _busy ? null : _import,
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(t('استيراد (2–6 ثوانٍ)')),
                     ),
                   ),
                 ],
@@ -220,7 +222,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.tonalIcon(
+                child: TextButton.icon(
                   onPressed: (_busy || _recording)
                       ? null
                       : () => context.go('/download'),
@@ -230,7 +232,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ),
               if (_recording) ...[
                 const SizedBox(height: 12),
-                WaveformBars(values: _live),
+                // While recording, the live wave is the hero.
+                WaveformBars(values: _live, height: 96),
               ],
               if (_busy) const LinearProgressIndicator(),
               if (_msg != null)
@@ -242,9 +245,35 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SectionTitle(t('أصوات التحدي')),
               Expanded(
                 child: game.library.isEmpty
-                    ? Center(
-                        child: Text(t(
-                            'فارغة. استورد أو سجّل صوتًا من 2–6 ثوانٍ للّعب.')))
+                    ? Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.mic_none,
+                                  size: 40, color: StageBlack.muted),
+                              const SizedBox(height: 10),
+                              Text(
+                                  t(
+                                      'فارغة. استورد أو سجّل صوتًا من 2–6 ثوانٍ للّعب.'),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      color: StageBlack.muted,
+                                      fontSize: 14,
+                                      height: 1.35)),
+                              const SizedBox(height: 12),
+                              FilledButton.icon(
+                                onPressed:
+                                    (_busy || _recording) ? null : _record,
+                                icon: const Icon(Icons.mic),
+                                label: Text(t('تسجيل {n} ث',
+                                    {'n': _recordSeconds})),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: game.library.length,
                         itemBuilder: (context, i) {
@@ -364,6 +393,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

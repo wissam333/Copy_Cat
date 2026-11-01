@@ -19,6 +19,11 @@ const Map<String, String> _en = {
   'إنشاء غرفة': 'Host a room',
   'انضمام': 'Join',
   'أصواتي': 'My Sounds',
+  'هذا الموبايل': 'This phone',
+  'مرّر الموبايل — كل لاعب يقلّد في دوره.':
+      'Pass the phone around — players mimic in turn.',
+  'نفس الواي فاي': 'Same Wi‑Fi',
+  'كل لاعب على موبايله.': 'Everyone uses their own phone.',
   'شخصيتك — اضغط للمتجر': 'Your character — tap for the shop',
   'رصيدك {n} 🪙': 'Balance {n} 🪙',
   'اسمك': 'Your name',
@@ -126,11 +131,11 @@ const Map<String, String> _en = {
       'While waiting for someone else: force one redo of their take',
   // lobby_screen
   'نجمع أصوات الجميع ونخلطها، ونلعب حتى ٥ جولات مفاجئة.':
-      'We gather everyone\'s sounds, shuffle them, and play up to 5 surprise rounds.',
+      'We gather everyone\'s sounds, shuffle them, and play surprise rounds.',
   'كل لاعب يختار صوتًا مرة. الباقي يقلّدون أول، والمختار آخر واحد.':
       'Each player picks a sound once. Everyone else mimics it first; the picker goes last.',
   'المضيف يرتّب ١–٥ أصوات من مكتبته والكل يقلّدها بالترتيب.':
-      'The host orders 1–5 sounds from their library; everyone mimics them in order.',
+      'The host orders sounds from their library; everyone mimics them in order.',
   'فشلت الاستضافة: {n}': 'Hosting failed: {n}',
   'جارٍ اكتشاف الغرف…': 'Scanning for rooms…',
   'فشل الاكتشاف: {n}': 'Discovery failed: {n}',
@@ -148,7 +153,7 @@ const Map<String, String> _en = {
   'هذا أنت': "That's you",
   'متصل': 'Connected',
   'طريقة اللعب': 'Game Mode',
-  'أصوات التحدي (١–٥ بالترتيب)': 'Challenge sounds (1–5, in order)',
+  'أصوات التحدي (١–٥ بالترتيب)': 'Challenge sounds (in order)',
   'خمس جولات كافية': 'Five rounds is plenty',
   'غرف قريبة': 'Nearby Rooms',
   'ننتظر هاتفًا آخر… (اللعب بموبايل واحد من الرئيسية)':

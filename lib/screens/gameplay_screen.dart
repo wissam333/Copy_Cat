@@ -21,6 +21,7 @@ import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart' show turnNoteLabel;
 
 import '../i18n.dart';
+import '../stage_theme.dart';
 import '../state/client_engine.dart';
 import '../state/coins.dart';
 import '../state/game_state.dart';
@@ -402,7 +403,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       if (_picked.contains(sound.id)) {
         _picked = [for (final id in _picked) if (id != sound.id) id];
       } else if (multi) {
-        if (_picked.length >= 5) return;
+        if (_picked.length >= GameData.maxSoundsPerRound) return;
         _picked = [..._picked, sound.id];
       } else {
         _picked = [sound.id];
@@ -687,11 +688,11 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                   ? t('…يختار الصوت')
                   : t('{n} يختار الصوت…', {'n': match.choosingName}),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 22)),
+              style: const TextStyle(color: StageBlack.text, fontSize: 22)),
           const SizedBox(height: 8),
           Text(t('استعد، فدورك قادم بعده.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70)),
+              style: const TextStyle(color: StageBlack.muted)),
           const Spacer(),
         ]);
       case 'turn':
@@ -703,7 +704,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           Text(t('حان دور {n}', {'n': match.nameOf(match.activePlayerId)}),
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: Colors.white,
+                  color: StageBlack.text,
                   fontSize: 30,
                   fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
@@ -718,18 +719,18 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
           if ((match.soundTitle ?? '').isNotEmpty)
             Text(t('“{n}”', {'n': t(match.soundTitle!)}),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white)),
+                style: const TextStyle(color: StageBlack.text)),
           if (match.powerNote.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(match.powerNote,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.amber, fontSize: 13, height: 1.35)),
+                    color: StageBlack.gold, fontSize: 13, height: 1.35)),
           ],
           const SizedBox(height: 8),
           Text(t('ابقَ صامتًا — لا سماعة ولا ميكروفون لديك الآن.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70)),
+              style: const TextStyle(color: StageBlack.muted)),
           const SizedBox(height: 16),
           // Power-ups: waiting players only (⚡ forces one redo, 🛡️
           // drops their worst round at match end).
@@ -754,7 +755,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                     children: [
           Text(t('النتيجة القادمة من المضيف…'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70)),
+              style: TextStyle(color: StageBlack.muted)),
           const SizedBox(height: 6),
           AvatarView(
             avatarId: ShopData.avatarOf(match.lastRevealId == null
@@ -791,13 +792,13 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                 }),
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(color: Colors.amber, fontSize: 16)),
+                    const TextStyle(color: StageBlack.gold, fontSize: 16)),
           if (match.lastFunny.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(match.lastFunny,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.white, fontSize: 15)),
+                    color: StageBlack.text, fontSize: 15)),
           ],
           if (mineNow &&
               match.targetWave.isNotEmpty &&
@@ -816,7 +817,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                 t('السبب: {n}', {'n': t(turnNoteLabel(match.myNote))}),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.white70, fontSize: 13),
+                    color: StageBlack.muted, fontSize: 13),
               ),
             ),
           // Every phone sees the graded axes of the revealed take, chosen
@@ -827,6 +828,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
             timbre: match.lastRevealAxes['timbre'] ?? -1,
             energy: match.lastRevealAxes['energy'] ?? -1,
             timing: match.lastRevealAxes['timing'] ?? -1,
+            showValue: true,
           ),
           if (match.powerNote.isNotEmpty)
             Padding(
@@ -834,7 +836,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               child: Text(match.powerNote,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                      color: Colors.amber, fontSize: 13, height: 1.35)),
+                      color: StageBlack.gold, fontSize: 13, height: 1.35)),
             ),
           const SizedBox(height: 6),
                     ]),
@@ -848,11 +850,11 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         return _StageCard(children: [
           const Spacer(),
           Center(
-              child: CircularProgressIndicator(color: Colors.white)),
+              child: CircularProgressIndicator(color: StageBlack.gold)),
           SizedBox(height: 12),
           Text(t('نجهّز الأصوات…'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 18)),
+              style: TextStyle(color: StageBlack.text, fontSize: 18)),
           Spacer(),
         ]);
     }
@@ -872,7 +874,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       message: tooltip,
       triggerMode: TooltipTriggerMode.longPress,
       child: Material(
-        color: dead ? Colors.white12 : Colors.white24,
+        color: dead ? StageBlack.line : StageBlack.lineStrong,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -886,7 +888,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
                   style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: dead ? Colors.white38 : Colors.white)),
+                      color: dead ? StageBlack.muted : StageBlack.text)),
             ]),
           ),
         ),
@@ -914,7 +916,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
     if (match.goRequested) {
       return _StageCard(children: [
         const Spacer(),
-        const Icon(Icons.hearing, color: Colors.white, size: 64),
+        const Icon(Icons.hearing, color: StageBlack.text, size: 64),
         const SizedBox(height: 4),
         AvatarView(
           avatarId: ref.watch(shopProvider).avatar,
@@ -926,18 +928,18 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: Colors.white,
+                color: StageBlack.text,
                 fontSize: 24,
                 fontWeight: FontWeight.w800)),
         if ((match.soundTitle ?? '').isNotEmpty)
           Text(t('“{n}”', {'n': t(match.soundTitle!)}),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 18)),
+              style: const TextStyle(color: StageBlack.text, fontSize: 18)),
         const SizedBox(height: 8),
         Text(
           t('اضغط الزر: ستستمع إلى الصوت مرة واحدة، ثم تنتظر ٣ ثوانٍ، وبعدها يُسجَّل تقليدك تلقائيًا.'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70, fontSize: 15),
+          style: const TextStyle(color: StageBlack.muted, fontSize: 15),
         ),
         const SizedBox(height: 12),
         // ×2 must be armed BEFORE the take — it can never rewrite a grade
@@ -946,8 +948,8 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         const Spacer(),
         FilledButton.icon(
           style: FilledButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF4C1D95),
+            backgroundColor: StageBlack.gold,
+            foregroundColor: StageBlack.onGold,
             minimumSize: const Size.fromHeight(60),
           ),
           onPressed: () {
@@ -972,10 +974,10 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       TurnPhase.recording => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic, color: Colors.redAccent, size: 72),
+            const Icon(Icons.mic, color: StageBlack.bad, size: 72),
             const SizedBox(height: 8),
             Text(t('قلّد الآن'),
-                style: const TextStyle(color: Colors.white, fontSize: 20)),
+                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
             const SizedBox(height: 16),
             OverlayWaves(
               target: match.targetWave,
@@ -986,20 +988,20 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       TurnPhase.listening => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.hearing, color: Colors.white, size: 64),
+            const Icon(Icons.hearing, color: StageBlack.text, size: 64),
             SizedBox(height: 12),
             Text(t('استمع… مرة واحدة'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 20)),
+                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
           ],
         ),
       _ => Text(t('دورك… جهّز نفسك'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white, fontSize: 20)),
+          style: const TextStyle(color: StageBlack.text, fontSize: 20)),
     };
     return _StageCard(children: [
       Text(t('حان دورك يا {n}', {'n': match.nameOf(match.selfId)}),
-          style: const TextStyle(color: Colors.white70)),
+          style: const TextStyle(color: StageBlack.muted)),
       const Spacer(),
       body,
       const Spacer(),
@@ -1272,7 +1274,7 @@ class _Blocked extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 72, color: Colors.grey),
+          Icon(icon, size: 72, color: StageBlack.muted),
           const SizedBox(height: 12),
           Text(text, textAlign: TextAlign.center),
           const SizedBox(height: 20),
@@ -1293,7 +1295,7 @@ class _Handoff extends ConsumerWidget {
     return _StageCard(
       children: [
         Text(t('مرّر الهاتف إلى'),
-            style: const TextStyle(color: Colors.white70, fontSize: 18)),
+            style: const TextStyle(color: StageBlack.muted, fontSize: 18)),
         const SizedBox(height: 16),
         AvatarView(
           avatarId: ref.watch(shopProvider).avatar,
@@ -1305,23 +1307,23 @@ class _Handoff extends ConsumerWidget {
         Text(me.name,
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: Colors.white,
+                color: StageBlack.text,
                 fontSize: 36,
                 fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         Text(
           t('الجولة {a} من {b}',
               {'a': game.roundIndex + 1, 'b': game.roundsTotal}),
-          style: const TextStyle(color: Colors.white70),
+          style: const TextStyle(color: StageBlack.muted),
         ),
         if (game.challenge != null)
           Text(t('التحدي: {n}', {'n': t(game.challenge!.title)}),
-              style: const TextStyle(color: Colors.white)),
+              style: const TextStyle(color: StageBlack.text)),
         const Spacer(),
         FilledButton.icon(
           style: FilledButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF4C1D95),
+            backgroundColor: StageBlack.gold,
+            foregroundColor: StageBlack.onGold,
             minimumSize: const Size.fromHeight(56),
           ),
           onPressed: () =>
@@ -1376,18 +1378,18 @@ class _TurnStage extends StatelessWidget {
       TurnPhase.recording => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic, color: Colors.redAccent, size: 72),
+            const Icon(Icons.mic, color: StageBlack.bad, size: 72),
             const SizedBox(height: 8),
             Text(
               secondsLeft.toStringAsFixed(1),
               style: const TextStyle(
-                  color: Colors.white,
+                  color: StageBlack.text,
                   fontSize: 64,
                   fontWeight: FontWeight.w800,
                   height: 1),
             ),
             Text(t('قلّد الآن'),
-                style: const TextStyle(color: Colors.white70, fontSize: 18)),
+                style: const TextStyle(color: StageBlack.muted, fontSize: 18)),
             const SizedBox(height: 16),
             OverlayWaves(target: wave, attempt: trace, height: 64),
           ],
@@ -1395,34 +1397,34 @@ class _TurnStage extends StatelessWidget {
       TurnPhase.listening => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.hearing, color: Colors.white, size: 64),
+            const Icon(Icons.hearing, color: StageBlack.text, size: 64),
             const SizedBox(height: 12),
             Text(status,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 20)),
+                style: const TextStyle(color: StageBlack.text, fontSize: 20)),
             const SizedBox(height: 16),
             if (wave.isNotEmpty)
               WaveformBars(
-                  values: wave, progress: playProgress, color: Colors.white),
+                  values: wave, progress: playProgress, color: StageBlack.text),
           ],
         ),
       _ => scoring
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(color: Colors.white),
+                const CircularProgressIndicator(color: StageBlack.gold),
                 SizedBox(height: 12),
                 Text(t('نحسب درجة التقليد…'),
-                    style: const TextStyle(color: Colors.white, fontSize: 18)),
+                    style: const TextStyle(color: StageBlack.text, fontSize: 18)),
               ],
             )
           : Text(status,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 20)),
+              style: const TextStyle(color: StageBlack.text, fontSize: 20)),
     };
     return _StageCard(children: [
       Text(game.currentPlayer.name,
-          style: const TextStyle(color: Colors.white70)),
+          style: const TextStyle(color: StageBlack.muted)),
       const Spacer(),
       body,
       const Spacer(),
@@ -1485,7 +1487,7 @@ class _RevealState extends ConsumerState<_Reveal> {
                 Text(_funny,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        color: Colors.white70, fontSize: 15)),
+                        color: StageBlack.muted, fontSize: 15)),
                 const SizedBox(height: 4),
               ],
               if (game.lastBoosted)
@@ -1494,7 +1496,7 @@ class _RevealState extends ConsumerState<_Reveal> {
                   child: Text(t('✖️ ×2 مضاعفة'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          color: Colors.amber,
+                          color: StageBlack.gold,
                           fontSize: 14,
                           fontWeight: FontWeight.w800)),
                 ),
@@ -1521,7 +1523,7 @@ class _RevealState extends ConsumerState<_Reveal> {
               ),
               if (leading)
                 Text(t('أعلى تقليد لهذا الصوت حتى الآن'),
-                    style: const TextStyle(color: Colors.amber)),
+                    style: const TextStyle(color: StageBlack.gold)),
               const SizedBox(height: 8),
               RevealMeters(
                 kind: game.lastKind,
@@ -1529,18 +1531,19 @@ class _RevealState extends ConsumerState<_Reveal> {
                 timbre: game.lastTimbre ?? -1,
                 energy: game.lastEnergy ?? -1,
                 timing: game.lastTiming ?? -1,
+                showValue: true,
               ),
               const SizedBox(height: 6),
               Text(t('مجموع {n}: {s}',
                   {'n': me.name, 's': me.score}),
-                  style: const TextStyle(color: Colors.white, fontSize: 16)),
+                  style: const TextStyle(color: StageBlack.text, fontSize: 16)),
               if (score == 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
                     t('لم نسمعك جيدًا — قرّب الهاتف وقلّد بصوت أوضح'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    style: const TextStyle(color: StageBlack.muted, fontSize: 13),
                   ),
                 ),
               if (widget.targetWave.isNotEmpty &&
@@ -1553,7 +1556,7 @@ class _RevealState extends ConsumerState<_Reveal> {
               ] else if (widget.attemptWave.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 WaveformBars(
-                    values: widget.attemptWave, color: Colors.white, height: 42),
+                    values: widget.attemptWave, color: StageBlack.text, height: 42),
               ],
             ],
           ),
@@ -1633,8 +1636,8 @@ class _BoostPill extends StatelessWidget {
         triggerMode: TooltipTriggerMode.longPress,
         child: Material(
           color: armed
-              ? Colors.amber
-              : (dead ? Colors.white12 : Colors.white24),
+              ? StageBlack.gold
+              : (dead ? StageBlack.line : StageBlack.lineStrong),
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
@@ -1651,13 +1654,13 @@ class _BoostPill extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
                       color:
-                          armed ? const Color(0xFF2E1065) : Colors.white),
+                          armed ? StageBlack.onGold : StageBlack.text),
                 ),
                 if (!armed) ...[
                   const SizedBox(width: 4),
                   Text(t('(المخزون {n})', {'n': stock}),
                       style: const TextStyle(
-                          fontSize: 11, color: Colors.white60)),
+                          fontSize: 11, color: StageBlack.muted)),
                 ],
               ]),
             ),
@@ -1701,24 +1704,24 @@ class _ReadyCard extends ConsumerWidget {
         onArm: doubleArmed || doubleStock <= 0 ? null : onDouble,
       ),
       const Spacer(),
-      const Icon(Icons.hearing, color: Colors.white, size: 64),
+      const Icon(Icons.hearing, color: StageBlack.text, size: 64),
       const SizedBox(height: 12),
       if (shown != null && shown.isNotEmpty)
         Text(t('“{n}”', {'n': t(shown)}),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 22)),
+            style: const TextStyle(color: StageBlack.text, fontSize: 22)),
       const SizedBox(height: 8),
       Text(
         t('اضغط الزر: تسمع الصوت مرة، تنتظر ٣ ثوانٍ، وبعدين يتسجل تقليدك تلقائيًا.'),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white70, fontSize: 15),
+        style: const TextStyle(color: StageBlack.muted, fontSize: 15),
       ),
       const SizedBox(height: 12),
       const Spacer(),
       FilledButton.icon(
         style: FilledButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF4C1D95),
+          backgroundColor: StageBlack.gold,
+          foregroundColor: StageBlack.onGold,
           minimumSize: const Size.fromHeight(60),
         ),
         onPressed: onGo,
@@ -1788,10 +1791,11 @@ class _StageCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [Color(0xFF6D28D9), Color(0xFF2E1065)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [StageBlack.elev, StageBlack.bg],
         ),
+        border: Border.all(color: StageBlack.gold.withValues(alpha: 0.24)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1835,7 +1839,7 @@ class _ReactionButton extends ConsumerWidget {
               height: 52,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: StageBlack.lineStrong,
                 borderRadius: BorderRadius.circular(26),
               ),
               child:
@@ -1846,7 +1850,7 @@ class _ReactionButton extends ConsumerWidget {
         const SizedBox(height: 2),
         Text('🪙$price',
             style: const TextStyle(
-                color: Colors.white70, fontSize: 11)),
+                color: StageBlack.muted, fontSize: 11)),
       ],
     );
   }

@@ -64,6 +64,10 @@ class AttemptRecord {
 }
 
 class GameData {
+  /// Challenge sounds a host may order per match; raise to run longer
+  /// surprise rounds (random/solo rounds cap).
+  static const int maxSoundsPerRound = 5;
+
   final String playerName;
   final String roomName;
   final bool isHost;
@@ -484,7 +488,7 @@ class GameController extends Notifier<GameData> {
   void startRandomMatch(List<GameSound> sounds) {
     if (sounds.isEmpty) return;
     final players = _roster();
-    final rounds = min(5, sounds.length);
+    final rounds = min(GameData.maxSoundsPerRound, sounds.length);
     final queue = [...sounds]..shuffle(Random());
     final picked = queue.take(rounds).toList();
     final order = [for (final p in players) p.id];

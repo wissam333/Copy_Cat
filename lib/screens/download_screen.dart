@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../i18n.dart';
 import '../services/instant_catalog.dart';
 import '../services/instant_sounds.dart';
+import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../widgets/sprite_button.dart';
 
@@ -517,8 +518,9 @@ final prov = t(_providerNames[_provider] ?? '');
           onPressed: () => context.go('/library'),
         ),
       ),
-      body: SafeArea(
-        child: ListView(
+      body: StageBlack.background(
+        child: SafeArea(
+          child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Row(
@@ -530,13 +532,12 @@ final prov = t(_providerNames[_provider] ?? '');
                     decoration: InputDecoration(
                       hintText: t('ابحث عن صوت…'),
                       prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _search(),
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton(
+                OutlinedButton(
                     onPressed: _loading ? null : _search,
                     child: Text(t('بحث'))),
               ],
@@ -678,13 +679,38 @@ if (_provider == 'meme') ...[
             if (_msg != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child:
-                    Text(_msg!, style: const TextStyle(fontSize: 12)),
+                child: Card(
+                  color: StageBlack.elev,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    child: Text(_msg!,
+                        style: const TextStyle(
+                            fontSize: 12, color: StageBlack.muted)),
+                  ),
+                ),
               ),
             const SizedBox(height: 8),
             if ((_inBoards ? _boards.isEmpty : _clips.isEmpty) &&
                 !_loading)
-              Center(child: Text(t('فارغ.'))),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search,
+                          color: StageBlack.muted),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(t('فارغ.'),
+                            style: const TextStyle(
+                                color: StageBlack.muted,
+                                fontSize: 14)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             if (_inBoards)
               for (final board in _boards)
                 Card(
@@ -734,8 +760,8 @@ if (_provider == 'meme') ...[
                             onTap: () => _preview(clip),
                           ),
                           IconButton(
-                            icon:
-                                const Icon(Icons.download),
+                            icon: const Icon(Icons.download,
+                                color: StageBlack.gold),
                             onPressed:
                                 busy ? null : () => _add(clip),
                           ),
@@ -773,7 +799,6 @@ if (_provider == 'meme') ...[
                           hintText:
                               t('اذهب لصفحة… (مثال 400)'),
                           prefixIcon: const Icon(Icons.last_page),
-                          border: const OutlineInputBorder(),
                           isDense: true,
                         ),
                         onSubmitted: (_) {
@@ -816,7 +841,6 @@ if (_provider == 'meme') ...[
                 hintText: 'https://…mp3',
                 labelText: t('رابط الـmp3'),
                 prefixIcon: const Icon(Icons.link),
-                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -835,6 +859,7 @@ if (_provider == 'meme') ...[
             const SizedBox(height: 16),
           ],
         ),
+      ),
       ),
     );
   }
