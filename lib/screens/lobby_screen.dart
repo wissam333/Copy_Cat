@@ -468,14 +468,32 @@ class _JoinSection extends ConsumerWidget {
               children: [
                 for (final r in rooms)
                   Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.wifi_find),
-                      title: Text(r.name),
-                      trailing: FilledButton(
-                        onPressed: busy
-                            ? null
-                            : () => onJoin(r.ip, r.port, r.name),
-                        child: Text(t('انضم')),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.wifi_find),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              r.name,
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: busy
+                                ? null
+                                : () => onJoin(r.ip, r.port, r.name),
+                            child: Text(t('انضم')),
+                          ),
+                        ],
                       ),
                     ),
                   ),
