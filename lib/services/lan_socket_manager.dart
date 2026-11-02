@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bonsoir/bonsoir.dart';
@@ -37,10 +38,18 @@ class ReceivedPacket {
 }
 
 class DiscoveredRoom {
+  /// Display name (TXT record "room"; falls back to the mDNS name).
   final String name;
+
+  /// Unique mDNS instance name — dedupe/track key (display names can tie).
+  final String key;
   final String ip;
   final int port;
-  DiscoveredRoom({required this.name, required this.ip, required this.port});
+  DiscoveredRoom(
+      {required this.name,
+      required this.key,
+      required this.ip,
+      required this.port});
 }
 
 class LanSocketManager {
@@ -98,8 +107,16 @@ class LanSocketManager {
     await stopAll();
     isRoomLocked = false;
     _server = await ServerSocket.bind(InternetAddress.anyIPv4, port);
-    final service =
-        BonsoirService(name: roomName, type: serviceType, port: port);
+    // mDNS instance names must be ASCII — Android garbles Arabic ones
+    // (blank/tofu in the nearby list). The display name travels in the
+    // TXT record instead; the suffix keeps two hosts from name-clashing.
+    final suffix = Random().nextInt(0x10000).toRadixString(16).padLeft(4, '0');
+    final service = BonsoirService(
+      name: 'copycat-$suffix',
+      type: serviceType,
+      port: port,
+      attributes: {'room': roomName},
+    );
     _broadcast = BonsoirBroadcast(service: service);
     await _broadcast!.initialize();
     await _broadcast!.start();
@@ -133,8 +150,14 @@ class LanSocketManager {
         final svc = event.service!;
         final ip = svc.hostAddress;
         if (ip == null) return;
-        final idx = _rooms.indexWhere((r) => r.name == svc.name);
-        final room = DiscoveredRoom(name: svc.name, ip: ip, port: svc.port);
+        final shown = svc.attributes['room'];
+        final room = DiscoveredRoom(
+          name: (shown != null && shown.isNotEmpty) ? shown : svc.name,
+          key: svc.name,
+          ip: ip,
+          port: svc.port,
+        );
+        final idx = _rooms.indexWhere((r) => r.key == svc.name);
         if (idx >= 0) {
           _rooms[idx] = room;
         } else {
@@ -142,7 +165,7 @@ class LanSocketManager {
         }
         _roomsController.add(List.unmodifiable(_rooms));
       } else if (event is BonsoirDiscoveryServiceLostEvent) {
-        _rooms.removeWhere((r) => r.name == event.service.name);
+        _rooms.removeWhere((r) => r.key == event.service.name);
         _roomsController.add(List.unmodifiable(_rooms));
       }
     });
