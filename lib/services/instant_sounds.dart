@@ -143,13 +143,16 @@ class InstantSounds {
     InstantTag(tag: 'united-states', name: 'US'),
   ];
 
-  Future<void> openSite() => NativeAudio().openUrl(trendingUrl);
+  Future<void> openSite([String country = 'sy']) => NativeAudio().openUrl(
+      'https://www.myinstants.com/en/index/${_countryCode(country)}/');
 
-  /// Trending Syria through the JSON API, server-filtered to game length.
+  /// Trending for one country, server-filtered to game length.
+  /// [country] is an ISO 3166-1 alpha-2 code (`sy` by default).
   /// Pages start at 1; an empty list means no more pages.
-  Future<InstantPage> apiTrending({int page = 1}) {
+  Future<InstantPage> apiTrending({int page = 1, String country = 'sy'}) {
     return _getPage(
-        '$apiBase/trending?q=sy&page=$page&min_duration=2&max_duration=6',
+        '$apiBase/trending?country=${_countryCode(country)}'
+        '&page=$page&min_duration=2&max_duration=6',
         t('تعذّر جلب القائمة'));
   }
 
@@ -164,11 +167,13 @@ class InstantSounds {
   }
 
   /// One fixed site category, server-filtered to game length.
-  /// Matches the deployment docs: `GET /category?category=<name>&q=sy`.
-  Future<InstantPage> apiCategory(String slug, {int page = 1}) {
+  /// [country] is an ISO code (`sy` by default). Name search ignores it.
+  Future<InstantPage> apiCategory(String slug,
+      {int page = 1, String country = 'sy'}) {
     return _getPage(
         '$apiBase/category?category=${Uri.encodeQueryComponent(slug)}'
-        '&q=sy&page=$page&min_duration=2&max_duration=6',
+        '&country=${_countryCode(country)}'
+        '&page=$page&min_duration=2&max_duration=6',
         t('تعذّر جلب التصنيف'));
   }
 
@@ -344,6 +349,40 @@ class InstantSounds {
       .replaceAllMapped(RegExp(r'&#(\d+);'),
           (m) => String.fromCharCode(int.parse(m.group(1)!)));
 
+  /// Resolve a pasted myinstants instant link to one sound via the detail
+  /// endpoint. Returns null for non-instant links.
+  Future<InstantClip?> clipFromMyInstantsLink(String url) async {
+    final m = RegExp(
+            r'^https?://[^/]*myinstants\.com/(?:en/)?instant/([^/?]+)')
+        .firstMatch(url.trim());
+    if (m == null) return null;
+    final detail = await apiInstant(m.group(1)!);
+    return InstantClip(
+      title: detail['title']?.toString() ?? t('صوت من الإنترنت'),
+      mp3Url: (detail['mp3'] ?? '').toString(),
+      duration: (detail['duration'] as num?)?.toDouble(),
+      source: 'myinstants',
+    );
+  }
+
+  /// One sound's details by its myinstants instant id.
+  Future<Map<String, dynamic>> apiInstant(String id) async {
+    final res = await http
+        .get(Uri.parse(
+            '$apiBase/detail?id=${Uri.encodeQueryComponent(id)}&withDuration=1'),
+        headers: _browserHeaders)
+        .timeout(const Duration(seconds: 30));
+    if (res.statusCode != 200) {
+      throw StateError(t('تعذّر الجلب ({n})', {'n': res.statusCode}));
+    }
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    final data = decoded['data'];
+    if (data is! Map) {
+      throw StateError(t('الصوت غير موجود'));
+    }
+    return Map<String, dynamic>.from(data);
+  }
+
   /// Downloads a direct MP3 link into app cache. Returns the local path.
   /// Throws a human (Arabic) message on failure.
   Future<String> downloadMp3(String rawUrl,
@@ -389,4 +428,10 @@ class InstantSounds {
     }
     return file.path;
   }
+}
+
+/// ISO 3166-1 alpha-2, or Syria when the value is not a 2-letter code.
+String _countryCode(String country) {
+  final c = country.trim().toLowerCase();
+  return RegExp(r'^[a-z]{2}$').hasMatch(c) ? c : 'sy';
 }

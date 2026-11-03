@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../i18n.dart';
 import '../services/instant_catalog.dart';
 import '../services/instant_sounds.dart';
+import '../services/mi_countries.dart';
 import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../widgets/sprite_button.dart';
@@ -30,6 +31,9 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
   List<InstantClip> _clips = const [];
   String _query = '';
   String? _category;
+  // ISO country for myinstants trending and categories. Name search
+  // is global: /search has no country parameter.
+  String _country = 'sy';
   // Sound provider: myinstants | meme | board101 | all.
   String _provider = 'myinstants';
   // Memesoundboard feed: new | trending | all.
@@ -99,9 +103,10 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
       default:
         if (query.isNotEmpty) return _api.apiSearch(query, page: page);
         if (_category != null) {
-          return _api.apiCategory(_category!, page: page);
+          return _api.apiCategory(_category!,
+              page: page, country: _country);
         }
-        return _api.apiTrending(page: page);
+        return _api.apiTrending(page: page, country: _country);
     }
   }
 
@@ -230,9 +235,11 @@ class _DownloadScreenState extends ConsumerState<DownloadScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      if (_provider != 'myinstants' || _category != null) {
-        // Other providers (and myinstants categories) have no saved
-        // fallback: a missing endpoint must not show unrelated sounds.
+      if (_provider != 'myinstants' ||
+          _category != null ||
+          _country != 'sy') {
+        // The saved list is Syria trending. Other providers, categories,
+        // and countries must not show those sounds.
         setState(() {
           _clips = const [];
           _fromCatalog = false;
@@ -331,6 +338,28 @@ void _search() {
     _fresh('', 1);
   }
 
+  void _pickCountry(String code) {
+    if (code == _country) return;
+    _country = code;
+    if (_query.isNotEmpty) _q.clear();
+    _fresh('', 1);
+  }
+
+  Future<void> _openCountryPicker() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: StageBlack.panel,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _CountrySheet(selected: _country),
+    );
+    if (picked == null || !mounted) return;
+    _pickCountry(picked);
+  }
+
   /// Jump straight to any page (e.g. 400). Replaces the list.
   /// Sounds only; boards page through the المزيد button.
   void _jump() {
@@ -360,8 +389,12 @@ void _search() {
       return '${tag ?? t('لوحات ١٠١')} (${_boards.length}) — ${t('صفحة {n}', {'n': _page})}';
     }
 final prov = t(_providerNames[_provider] ?? '');
-    if (_provider == 'myinstants' && _category != null) {
-      return '${InstantSounds.categories[_category]} (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
+    if (_provider == 'myinstants' && _query.isEmpty) {
+      final place = miCountryByCode(_country).label;
+      final head = _category == null
+          ? '$prov · $place'
+          : '${InstantSounds.categories[_category]} · $place';
+      return '$head (${_clips.length}) — ${t('صفحة {n}', {'n': _page})} — $how';
     }
     if (_provider == 'meme' && _query.isEmpty) {
       final head = _memeCat.isNotEmpty
@@ -454,6 +487,16 @@ final prov = t(_providerNames[_provider] ?? '');
     }
   }
 
+  String _pastedTitle(String url) {
+    final fileName = url.split('/').last.split('?').first;
+    if (!fileName.toLowerCase().endsWith('.mp3')) {
+      return t('صوت من الإنترنت');
+    }
+    return fileName
+        .substring(0, fileName.length - 4)
+        .replaceAll(RegExp(r'[-_]+'), ' ');
+  }
+
   Future<void> _addLink() async {
     final url = _link.text.trim();
     if (url.isEmpty) {
@@ -465,16 +508,13 @@ final prov = t(_providerNames[_provider] ?? '');
       _msg = null;
     });
     try {
-      final path = await _api.downloadMp3(url);
-      final fileName = url.split('/').last.split('?').first;
-      final title = fileName.toLowerCase().endsWith('.mp3')
-          ? fileName
-              .substring(0, fileName.length - 4)
-              .replaceAll(RegExp(r'[-_]+'), ' ')
-          : t('صوت من الإنترنت');
+      final clip = await _api.clipFromMyInstantsLink(url);
+      final finalUrl = clip?.mp3Url ?? url;
+      final path = await _api.downloadMp3(finalUrl);
+      final title = clip?.title ?? _pastedTitle(url);
       final res = await ref
           .read(libraryProvider)
-          .ingest(path, title: title, sourceUrl: url);
+          .ingest(path, title: title, sourceUrl: finalUrl);
       if (!mounted) return;
       if (res.sound != null) {
         await ref
@@ -499,7 +539,7 @@ final prov = t(_providerNames[_provider] ?? '');
   }
 
   Future<void> _openSite() async {    try {
-      await _api.openSite();
+      await _api.openSite(_country);
     } catch (e) {
       if (mounted) {
         setState(() =>
@@ -562,6 +602,8 @@ final prov = t(_providerNames[_provider] ?? '');
               ),
             ),
             if (_provider == 'myinstants') ...[
+              const SizedBox(height: 8),
+              _CountryField(code: _country, onTap: _openCountryPicker),
               const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -888,4 +930,134 @@ class _Thumb extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Closed country control. Opens [_CountrySheet].
+class _CountryField extends StatelessWidget {
+  final String code;
+  final VoidCallback onTap;
+  const _CountryField({required this.code, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: t('الدولة'),
+          prefixIcon: const Icon(Icons.public),
+          suffixIcon: const Icon(Icons.arrow_drop_down),
+        ),
+        child: Text(
+          miCountryByCode(code).label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+}
+
+/// Searchable country list. Too many countries for a row of pills.
+class _CountrySheet extends StatefulWidget {
+  final String selected;
+  const _CountrySheet({required this.selected});
+
+  @override
+  State<_CountrySheet> createState() => _CountrySheetState();
+}
+
+class _CountrySheetState extends State<_CountrySheet> {
+  final TextEditingController _search = TextEditingController();
+  String _q = '';
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final folded = _fold(_q.trim());
+    final items = <MiCountry>[
+      for (final c in miCountries)
+        if (folded.isEmpty ||
+            c.code.contains(folded) ||
+            _fold(c.ar).contains(folded) ||
+            _fold(c.en).contains(folded))
+          c,
+    ]..sort((a, b) => a.label.compareTo(b.label));
+    if (folded.isEmpty) {
+      final i = items.indexWhere((c) => c.code == widget.selected);
+      if (i > 0) {
+        final sel = items.removeAt(i);
+        items.insert(0, sel);
+      }
+    }
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final height = MediaQuery.sizeOf(context).height * 0.78 - inset;
+    return Padding(
+      padding: EdgeInsets.only(bottom: inset),
+      child: SizedBox(
+        height: height < 240 ? 240 : height,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                controller: _search,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: t('ابحث عن دولة…'),
+                  prefixIcon: const Icon(Icons.search),
+                ),
+                onChanged: (v) => setState(() => _q = v),
+              ),
+            ),
+            Expanded(
+              child: items.isEmpty
+                  ? Center(
+                      child: Text(
+                        t('لا نتائج — جرّب كلمة ثانية'),
+                        style: TextStyle(color: StageBlack.muted),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final c = items[i];
+                        final on = c.code == widget.selected;
+                        return ListTile(
+                          leading: Text(c.flag,
+                              style: const TextStyle(fontSize: 22)),
+                          title: Text(c.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                          trailing: on
+                              ? Icon(Icons.check, color: StageBlack.gold)
+                              : null,
+                          onTap: () => Navigator.pop(context, c.code),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Folds alef/teh variants so a typed query still hits the stored name.
+String _fold(String s) {
+  return s
+      .toLowerCase()
+      .replaceAll('\u0623', '\u0627')
+      .replaceAll('\u0625', '\u0627')
+      .replaceAll('\u0622', '\u0627')
+      .replaceAll('\u0629', '\u0647')
+      .replaceAll('\u0649', '\u064A');
 }

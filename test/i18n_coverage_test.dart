@@ -3,6 +3,9 @@
 // (Wrapped-but-unmapped was the bug behind "من سيلعب؟" showing in English.)
 import 'dart:io';
 
+import 'package:copy_cat/i18n.dart';
+import 'package:copy_cat/services/mi_countries.dart';
+import 'package:copy_cat/state/language.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -47,6 +50,18 @@ void main() {
     expect(missing, isEmpty,
         reason: 'Keys used in lib/ but missing from the _en map '
             '(EN mode shows these as bare Arabic):\n${missing.join('\n')}');
+  });
+
+  test('myinstants country names translate', () {
+    currentLanguage = AppLanguage.english;
+    addTearDown(() => currentLanguage = AppLanguage.arabic);
+    final codes = <String>{};
+    for (final c in miCountries) {
+      expect(codes.add(c.code), isTrue, reason: 'duplicate ${c.code}');
+      expect(c.code, matches(RegExp(r'^[a-z]{2}$')));
+      expect(t(c.ar), c.en, reason: c.code);
+    }
+    expect(miCountryByCode('sy').code, 'sy');
   });
 }
 
