@@ -434,6 +434,15 @@ class _ModeCard extends StatelessWidget {
   }
 }
 
+/// Gold join that sits beside a label. Finite minimum width, unlike the
+/// theme button, which is `Size.fromHeight` (infinite width).
+final _inlineJoin = FilledButton.styleFrom(
+  minimumSize: const Size(0, 44),
+  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  visualDensity: VisualDensity.compact,
+);
+
 class _JoinSection extends ConsumerWidget {
   final bool busy;
   final Future<void> Function(String ip, int port, String label) onJoin;
@@ -468,16 +477,35 @@ class _JoinSection extends ConsumerWidget {
               children: [
                 for (final r in rooms)
                   Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.wifi_find),
-                      title: Text(r.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
-                      trailing: FilledButton(
-                        onPressed: busy
-                            ? null
-                            : () => onJoin(r.ip, r.port, r.name),
-                        child: Text(t('انضم')),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          12, 8, 8, 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.wifi_find),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              r.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Theme buttons use Size.fromHeight, whose width
+                          // is infinite. In a row that swallows the name
+                          // and leaves a band of empty space above a
+                          // full-width pill. Hug the label instead.
+                          FilledButton(
+                            style: _inlineJoin,
+                            onPressed: busy
+                                ? null
+                                : () => onJoin(r.ip, r.port, r.name),
+                            child: Text(t('انضم')),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -505,6 +533,7 @@ class _JoinSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
+                      style: _inlineJoin,
                       onPressed: busy
                           ? null
                           : () => onJoin(ipController.text.trim(),

@@ -52,6 +52,32 @@ class DiscoveredRoom {
       required this.port});
 }
 
+/// Android NSD drops or garbles TXT values that aren't plain ASCII, which
+/// is why nearby rooms showed up blank. Percent-encoding keeps the name.
+String encodeRoomAttribute(String roomName) => Uri.encodeComponent(roomName);
+
+/// Reverse of [encodeRoomAttribute]. A missing or broken value falls back
+/// to the mDNS instance name so the row still has something to show.
+String roomNameFromAttribute(String? raw, String fallback) {
+  final decoded = _decodeRoomAttribute(raw);
+  if (decoded != null) return decoded;
+  final name = fallback.trim();
+  return name.isEmpty ? '—' : name;
+}
+
+String? _decodeRoomAttribute(String? raw) {
+  if (raw == null) return null;
+  final trimmed = raw.trim();
+  // Bonsoir writes the literal "null" when a TXT key has no value.
+  if (trimmed.isEmpty || trimmed == 'null') return null;
+  try {
+    final decoded = Uri.decodeComponent(trimmed).trim();
+    return decoded.isEmpty ? null : decoded;
+  } catch (_) {
+    return trimmed;
+  }
+}
+
 class LanSocketManager {
   static const String serviceType = '_mimicparty._tcp';
   static const int defaultPort = 8080;
@@ -109,13 +135,14 @@ class LanSocketManager {
     _server = await ServerSocket.bind(InternetAddress.anyIPv4, port);
     // mDNS instance names must be ASCII — Android garbles Arabic ones
     // (blank/tofu in the nearby list). The display name travels in the
-    // TXT record instead; the suffix keeps two hosts from name-clashing.
+    // TXT record, percent-encoded so the value itself stays ASCII too.
+    // The suffix keeps two hosts from name-clashing.
     final suffix = Random().nextInt(0x10000).toRadixString(16).padLeft(4, '0');
     final service = BonsoirService(
       name: 'copycat-$suffix',
       type: serviceType,
       port: port,
-      attributes: {'room': roomName},
+      attributes: {'room': encodeRoomAttribute(roomName)},
     );
     _broadcast = BonsoirBroadcast(service: service);
     await _broadcast!.initialize();
@@ -150,9 +177,8 @@ class LanSocketManager {
         final svc = event.service!;
         final ip = svc.hostAddress;
         if (ip == null) return;
-        final shown = svc.attributes['room'];
         final room = DiscoveredRoom(
-          name: (shown != null && shown.isNotEmpty) ? shown : svc.name,
+          name: roomNameFromAttribute(svc.attributes['room'], svc.name),
           key: svc.name,
           ip: ip,
           port: svc.port,
