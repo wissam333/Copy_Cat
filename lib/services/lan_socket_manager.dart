@@ -26,6 +26,11 @@ class PacketType {
   /// Power-up use: client → host request (kind double/volt/shield), and
   /// host → all event line (kind 'event'). JSON payload.
   static const int power = 0x0C;
+
+  /// Award audio: [4B headerLen][header JSON {kind, playerId, round}]
+  /// [wav bytes]. Owner → host after matchOver; host saves + rebroadcasts
+  /// to the others so every results screen can replay the awarded takes.
+  static const int awardAudio = 0x0D;
 }
 
 class ReceivedPacket {
@@ -300,6 +305,16 @@ class LanSocketManager {
     if (_client != null) {
       try {
         _send(_client!, type, bytes);
+      } catch (_) {}
+    }
+  }
+
+  /// Host → every peer except [except] (no echo back to the uploader).
+  void broadcastBytesExcept(Socket? except, int type, Uint8List bytes) {
+    for (final c in List<Socket>.from(_hostClients)) {
+      if (identical(c, except)) continue;
+      try {
+        _send(c, type, bytes);
       } catch (_) {}
     }
   }

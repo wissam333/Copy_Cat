@@ -12,7 +12,9 @@ class _FakeIo extends AudioIoService {
   @override
   Future<bool> ensureMicPermission() async => true;
   @override
-  Future<String?> recordWav(String path, Duration recordFor) async => path;
+  Future<String?> recordWav(String path, Duration recordFor,
+      {void Function(double hz)? onPitch}) async =>
+      path;
   @override
   Future<void> cancelRecording() async {}
   @override

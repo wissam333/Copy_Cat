@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import '../models/game_sound.dart';
 import '../services/funny_lines.dart';
 import '../services/lan_socket_manager.dart';
+import '../services/match_awards.dart';
 import '../services/pitch_extractor.dart';
 import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart';
@@ -162,7 +163,28 @@ class HostEngine {
         _handleReaction(_json(p.payload));
       case PacketType.power:
         if (sender != null) _handlePower(sender, _json(p.payload));
+      case PacketType.awardAudio:
+        _handleAwardAudio(sender, p.payload);
     }
+  }
+
+  /// An awarded take arrived from its owner: keep a copy for this phone's
+  /// results screen, then pass it on to everyone else.
+  Future<void> _handleAwardAudio(Socket? sender, Uint8List payload) async {
+    if (payload.length < 4) return;
+    final bd = ByteData.sublistView(payload);
+    final headLen = bd.getUint32(0, Endian.big);
+    if (headLen > payload.length - 4) return;
+    try {
+      final header = jsonDecode(utf8.decode(payload.sublist(4, 4 + headLen)))
+          as Map<String, dynamic>;
+      final kind = (header['kind'] ?? '').toString();
+      if (kind.isEmpty) return;
+      final path = await ref.read(audioIoProvider).tempWavPath('award_$kind');
+      await File(path).writeAsBytes(payload.sublist(4 + headLen));
+      _match.setAwardAudio(kind, path);
+      _lan.broadcastBytesExcept(sender, PacketType.awardAudio, payload);
+    } catch (_) {}
   }
 
   /// A client spent a power-up and asks the referee to enforce it.
@@ -919,6 +941,7 @@ class HostEngine {
       onPhase: (p) => _match.setMyPhase(p),
       onCountdown: (n) => _match.setCountdown(n),
       onLevel: (l) => _match.pushLevel(l),
+      onPitch: (hz) => _match.setLivePitch(hz),
     );
     _match.setMyResult(result.score, '', result.melody, result.rhythm,
         note: result.note);
@@ -929,6 +952,9 @@ class HostEngine {
       'timing': result.verdict.timing,
     }, result.verdict.kind);
     _match.setMyWaves(attempt: result.attemptWave);
+    if (result.attemptPath != null) {
+      _match.setMyAttemptPath(roundIndex, result.attemptPath!);
+    }
     _recordScore(
       playerId: selfId ?? '',
       soundId: sound.id,
@@ -1067,12 +1093,20 @@ class HostEngine {
 
   Future<void> _finishMatch({bool aborted = false}) async {
     final match = ref.read(matchProvider);
+    // Awards come from the per-round scores the host already holds, so
+    // deciding them costs no extra traffic — they ride inside matchOver.
+    final awards = matchAwards([
+      for (final e in match.roundScores.entries)
+        for (var r = 0; r < e.value.length; r++)
+          AwardEntry(e.key, r, e.value[r]),
+    ]);
     final payload = {
       'aborted': aborted,
       'scoreboard': match.totals,
       'rounds': match.roundScores,
       'players': [for (final p in match.order) p.toJson()],
       'shields': _shields,
+      'awards': [for (final a in awards) a.toJson()],
     };
     try {
       _lan.broadcastJson(PacketType.matchOver, payload);
@@ -1085,7 +1119,17 @@ class HostEngine {
           },
           players: [...match.order],
           shields: Map<String, bool>.from(_shields),
+          awards: awards,
         );
+    // The host's own awarded takes are already on this phone's disk.
+    final me = match.selfId;
+    if (me != null) {
+      for (final a in awards) {
+        if (a.playerId != me) continue;
+        final path = match.myAttemptPaths[a.round];
+        if (path != null) _match.setAwardAudio(a.kind, path);
+      }
+    }
   }
 
   Socket? _peerOf(String playerId) {

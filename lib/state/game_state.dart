@@ -18,6 +18,7 @@ import '../models/player.dart';
 import '../services/audio_io_service.dart';
 import '../services/identity_store.dart';
 import '../services/lan_socket_manager.dart';
+import '../services/match_awards.dart';
 import '../services/pitch_extractor.dart';
 import '../services/sound_library_service.dart';
 import 'coins.dart';
@@ -784,11 +785,26 @@ class LanMatchData {
   final Map<String, List<double>> roundScores;
   final TurnPhase myPhase;
   final List<double> myLevels;
+
+  /// Live zero-crossing pitch on this phone while it records (meter only,
+  /// never broadcast). 0/null = no signal.
+  final double? myLivePitch;
   final int countdown;
   final List<double> myAttemptWave;
   final List<double> targetWave;
   final String lastFunny;
   final List<LanReaction> reactions;
+
+  /// End-of-match awards (host-computed, carried in matchOver).
+  final List<MatchAward> awards;
+
+  /// Award kind → local WAV path, filled from the owner's upload so every
+  /// phone can replay the awarded attempts on the results screen.
+  final Map<String, String> awardAudio;
+
+  /// This phone's recorded attempt WAV per round (LAN turns keep no
+  /// AttemptRecord, so this is how the owner finds the file to upload).
+  final Map<int, String> myAttemptPaths;
 
   /// Equipped look per player ("hat|glasses|hair"), synced over LAN.
   final Map<String, String> gear;
@@ -832,11 +848,15 @@ class LanMatchData {
     this.roundScores = const {},
     this.myPhase = TurnPhase.idle,
     this.myLevels = const [],
+    this.myLivePitch,
     this.countdown = 3,
     this.myAttemptWave = const [],
     this.targetWave = const [],
     this.lastFunny = '',
     this.reactions = const [],
+    this.awards = const [],
+    this.awardAudio = const {},
+    this.myAttemptPaths = const {},
     this.gear = const {},
     this.pickRequested = false,
     this.goRequested = false,
@@ -894,11 +914,15 @@ class LanMatchData {
     Map<String, List<double>>? roundScores,
     TurnPhase? myPhase,
     List<double>? myLevels,
+    double? Function()? myLivePitch,
     int? countdown,
     List<double>? myAttemptWave,
     List<double>? targetWave,
     String? lastFunny,
     List<LanReaction>? reactions,
+    List<MatchAward>? awards,
+    Map<String, String>? awardAudio,
+    Map<int, String>? myAttemptPaths,
     Map<String, String>? gear,
     bool? pickRequested,
     bool? goRequested,
@@ -949,11 +973,16 @@ class LanMatchData {
         roundScores: roundScores ?? this.roundScores,
         myPhase: myPhase ?? this.myPhase,
         myLevels: myLevels ?? this.myLevels,
+        myLivePitch:
+            myLivePitch == null ? this.myLivePitch : myLivePitch(),
         countdown: countdown ?? this.countdown,
         myAttemptWave: myAttemptWave ?? this.myAttemptWave,
         targetWave: targetWave ?? this.targetWave,
         lastFunny: lastFunny ?? this.lastFunny,
         reactions: reactions ?? this.reactions,
+        awards: awards ?? this.awards,
+        awardAudio: awardAudio ?? this.awardAudio,
+        myAttemptPaths: myAttemptPaths ?? this.myAttemptPaths,
         gear: gear ?? this.gear,
         pickRequested: pickRequested ?? this.pickRequested,
         goRequested: goRequested ?? this.goRequested,
@@ -1131,6 +1160,9 @@ class MatchController extends Notifier<LanMatchData> {
 
   void clearMyLevels() => state = state.copyWith(myLevels: const []);
 
+  void setLivePitch(double? hz) =>
+      state = state.copyWith(myLivePitch: () => hz);
+
   void setMyResult(
       double score, String label, double melody, double rhythm,
       {String note = ''}) {
@@ -1208,17 +1240,31 @@ class MatchController extends Notifier<LanMatchData> {
     state = state.copyWith(totals: totals, roundScores: rounds);
   }
 
+  void setMyAttemptPath(int round, String path) {
+    state = state.copyWith(
+        myAttemptPaths: {...state.myAttemptPaths, round: path});
+  }
+
+  void setAwards(List<MatchAward> awards) =>
+      state = state.copyWith(awards: awards);
+
+  void setAwardAudio(String kind, String path) {
+    state = state.copyWith(awardAudio: {...state.awardAudio, kind: path});
+  }
+
   void finishMatch({
     required Map<String, double> totals,
     required Map<String, List<double>> rounds,
     required List<LanPlayer> players,
     Map<String, bool> shields = const {},
+    List<MatchAward> awards = const [],
   }) {
     state = state.copyWith(
       totals: totals,
       roundScores: rounds,
       order: players,
       shields: shields,
+      awards: awards,
       stage: 'done',
       screen: 'results',
       myPhase: TurnPhase.idle,

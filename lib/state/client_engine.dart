@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/game_sound.dart';
 import '../services/lan_socket_manager.dart';
+import '../services/match_awards.dart';
 import '../services/pitch_extractor.dart';
 import '../services/shop_catalog.dart';
 import '../services/turn_runner.dart';
@@ -102,6 +103,8 @@ class ClientEngine {
         _onReaction(_json(p.payload));
       case PacketType.power:
         _onPower(_json(p.payload));
+      case PacketType.awardAudio:
+        _onAwardAudio(p.payload);
     }
   }
 
@@ -360,6 +363,7 @@ class ClientEngine {
         onPhase: (p) => _match.setMyPhase(p),
         onCountdown: (n) => _match.setCountdown(n),
         onLevel: (l) => _match.pushLevel(l),
+        onPitch: (hz) => _match.setLivePitch(hz),
       );
       _match.setMyResult(result.score, '', result.melody, result.rhythm,
           note: result.note);
@@ -370,6 +374,9 @@ class ClientEngine {
         'timing': result.verdict.timing,
       }, result.verdict.kind);
       _match.setMyWaves(attempt: result.attemptWave);
+      if (result.attemptPath != null) {
+        _match.setMyAttemptPath(roundIndex, result.attemptPath!);
+      }
       _sendScore(soundId, roundIndex, result.score, result.melody,
           result.rhythm, result.pitched,
           note: result.note,
@@ -498,7 +505,56 @@ class ClientEngine {
       ];
     }
     _match.finishMatch(
-        totals: totals, rounds: rounds, players: players, shields: shields);
+        totals: totals,
+        rounds: rounds,
+        players: players,
+        shields: shields,
+        awards: [
+          for (final a in ((json['awards'] as List?) ?? const []))
+            if (a is Map) MatchAward.fromJson(Map<String, dynamic>.from(a)),
+        ]);
+    unawaited(_uploadMyAwardAudio());
+  }
+
+  /// This phone owns any awarded take → send its WAV to the host, which
+  /// rebroadcasts it so every results screen can replay the attempt.
+  Future<void> _uploadMyAwardAudio() async {
+    final match = ref.read(matchProvider);
+    final me = match.selfId;
+    if (me == null) return;
+    for (final a in match.awards) {
+      if (a.playerId != me) continue;
+      final path = match.myAttemptPaths[a.round];
+      if (path == null) continue;
+      try {
+        final bytes = await File(path).readAsBytes();
+        final header = utf8.encode(jsonEncode(a.toJson()));
+        final headLen = ByteData(4)..setUint32(0, header.length, Endian.big);
+        _lan.sendToHostBytes(
+            Uint8List(4 + header.length + bytes.length)
+              ..setAll(0, headLen.buffer.asUint8List())
+              ..setAll(4, header)
+              ..setAll(4 + header.length, bytes),
+            PacketType.awardAudio);
+      } catch (_) {}
+    }
+  }
+
+  /// Save an arriving award WAV and offer it on the results screen.
+  Future<void> _onAwardAudio(Uint8List payload) async {
+    if (payload.length < 4) return;
+    final bd = ByteData.sublistView(payload);
+    final headLen = bd.getUint32(0, Endian.big);
+    if (headLen > payload.length - 4) return;
+    try {
+      final header = jsonDecode(utf8.decode(payload.sublist(4, 4 + headLen)))
+          as Map<String, dynamic>;
+      final kind = (header['kind'] ?? '').toString();
+      if (kind.isEmpty) return;
+      final path = await ref.read(audioIoProvider).tempWavPath('award_$kind');
+      await File(path).writeAsBytes(payload.sublist(4 + headLen));
+      _match.setAwardAudio(kind, path);
+    } catch (_) {}
   }
 
   /// Selector confirms one of their own sounds: pick, then file upload.

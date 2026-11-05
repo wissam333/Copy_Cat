@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
+import '../services/match_awards.dart';
 import '../stage_theme.dart';
 import '../state/game_state.dart';
 import '../state/host_engine.dart';
@@ -13,6 +14,77 @@ import '../widgets/ui_bits.dart';
 
 class ResultsScreen extends ConsumerWidget {
   const ResultsScreen({super.key});
+
+  /// The three end-of-match awards with a replay button when this phone
+  /// holds the attempt WAV (solo: always; LAN: after the owner's upload).
+  Widget _awards(
+      BuildContext context,
+      WidgetRef ref,
+      List<MatchAward> awards,
+      String Function(MatchAward) nameOf,
+      String? Function(MatchAward) pathOf) {
+    if (awards.isEmpty) return const SizedBox.shrink();
+    const emoji = {'best': '🏆', 'funny': '🤡', 'steady': '🎯'};
+    const title = {
+      'best': 'أفضل تقليد',
+      'funny': 'أطرف محاولة',
+      'steady': 'الأكثر ثباتًا',
+    };
+    return Column(
+      children: [
+        SectionTitle(t('جوائز الحفلة')),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              children: [
+                for (final a in awards)
+                  ListTile(
+                    leading: Text(emoji[a.kind] ?? '🏅',
+                        style: const TextStyle(fontSize: 26)),
+                    title: Text(t(title[a.kind] ?? ''),
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                        '${nameOf(a)} · ${t('{n} نقطة', {'n': a.score.round()})}'),
+                    trailing: pathOf(a) == null
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.play_arrow),
+                            onPressed: () async {
+                              try {
+                                await ref
+                                    .read(audioIoProvider)
+                                    .playOnce(pathOf(a)!);
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(t('فشل التشغيل: {n}',
+                                            {'n': e}))),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  AttemptRecord? _soloAttempt(GameData game, MatchAward a) {
+    for (final attempt in game.attempts) {
+      if (attempt.playerId == a.playerId &&
+          attempt.roundIndex == a.round) {
+        return attempt;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -127,6 +199,13 @@ class ResultsScreen extends ConsumerWidget {
                       Text(t('{n} نقطة', {'n': top.round()})),
                 ),
               ),
+              _awards(
+                context,
+                ref,
+                match.awards,
+                (a) => nameOf(a.playerId),
+                (a) => match.awardAudio[a.kind],
+              ),
             ],
             SectionTitle(t('الترتيب')),
             Text(t('عملاتك تفتح شخصيات المتجر — بالتوفيق'),
@@ -210,7 +289,6 @@ class ResultsScreen extends ConsumerWidget {
     final top = ranked.isEmpty ? 0 : ranked.first.score;
     final winners =
         ranked.where((p) => top > 0 && p.score == top).toList();
-    final best = game.bestAttempt;
     final rounds = <int>{for (final a in game.attempts) a.roundIndex}.toList()
       ..sort();
 
@@ -270,25 +348,15 @@ class ResultsScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              AppButton(
-                label: t('تشغيل أفضل محاولة'),
-                icon: Icons.play_arrow,
-                primary: false,
-                onPressed: best?.path == null
-                    ? null
-                    : () async {
-                        try {
-                          await ref.read(audioIoProvider).playOnce(best!.path!);
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(t('فشل التشغيل: {n}',
-                                      {'n': e}))),
-                            );
-                          }
-                        }
-                      },
+              _awards(
+                context,
+                ref,
+                matchAwards([
+                  for (final a in game.attempts)
+                    AwardEntry(a.playerId, a.roundIndex, a.score),
+                ]),
+                (a) => _soloAttempt(game, a)?.playerName ?? a.playerId,
+                (a) => _soloAttempt(game, a)?.path,
               ),
             ],
             SectionTitle(t('الترتيب')),
