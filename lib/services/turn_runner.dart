@@ -79,7 +79,6 @@ class TurnRunner {
     void Function(TurnPhase phase)? onPhase,
     void Function(int secondsLeft)? onCountdown,
     void Function(double level)? onLevel,
-    void Function(double hz)? onPitch,
   }) async {
     StreamSubscription<double>? ampSub;
     try {
@@ -110,8 +109,8 @@ class TurnRunner {
           (durationSeconds * 1000).round().clamp(2000, 6000);
       String? stopped;
       try {
-        stopped = await io.recordWav(rawPath, Duration(milliseconds: totalMs),
-            onPitch: onPitch);
+        stopped =
+            await io.recordWav(rawPath, Duration(milliseconds: totalMs));
       } catch (_) {
         final live = ampSub;
         ampSub = null;

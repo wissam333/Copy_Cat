@@ -785,10 +785,6 @@ class LanMatchData {
   final Map<String, List<double>> roundScores;
   final TurnPhase myPhase;
   final List<double> myLevels;
-
-  /// Live zero-crossing pitch on this phone while it records (meter only,
-  /// never broadcast). 0/null = no signal.
-  final double? myLivePitch;
   final int countdown;
   final List<double> myAttemptWave;
   final List<double> targetWave;
@@ -848,7 +844,6 @@ class LanMatchData {
     this.roundScores = const {},
     this.myPhase = TurnPhase.idle,
     this.myLevels = const [],
-    this.myLivePitch,
     this.countdown = 3,
     this.myAttemptWave = const [],
     this.targetWave = const [],
@@ -914,7 +909,6 @@ class LanMatchData {
     Map<String, List<double>>? roundScores,
     TurnPhase? myPhase,
     List<double>? myLevels,
-    double? Function()? myLivePitch,
     int? countdown,
     List<double>? myAttemptWave,
     List<double>? targetWave,
@@ -973,8 +967,6 @@ class LanMatchData {
         roundScores: roundScores ?? this.roundScores,
         myPhase: myPhase ?? this.myPhase,
         myLevels: myLevels ?? this.myLevels,
-        myLivePitch:
-            myLivePitch == null ? this.myLivePitch : myLivePitch(),
         countdown: countdown ?? this.countdown,
         myAttemptWave: myAttemptWave ?? this.myAttemptWave,
         targetWave: targetWave ?? this.targetWave,
@@ -1159,9 +1151,6 @@ class MatchController extends Notifier<LanMatchData> {
   }
 
   void clearMyLevels() => state = state.copyWith(myLevels: const []);
-
-  void setLivePitch(double? hz) =>
-      state = state.copyWith(myLivePitch: () => hz);
 
   void setMyResult(
       double score, String label, double melody, double rhythm,

@@ -28,7 +28,6 @@ import '../state/game_state.dart';
 import '../state/host_engine.dart';
 import '../state/shop_store.dart';
 import '../widgets/avatar_view.dart';
-import '../widgets/pitch_meter.dart';
 import '../widgets/reveal_meters.dart';
 import '../widgets/sound_picker.dart';
 import '../widgets/ui_bits.dart';
@@ -67,9 +66,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
   List<double> _wave = const [];
   List<double> _live = const [];
   List<double> _attemptWave = const [];
-
-  /// Live mic pitch (Hz) while this phone records solo — drives the meter.
-  double _livePitch = 0;
   List<GameSound> _sounds = const [];
   List<String> _picked = [];
   // Saved in initState: ref is unsafe once the widget starts unmounting.
@@ -269,7 +265,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
         setState(() {
           _status = t('قلّد الآن!');
           _live = const [];
-          _livePitch = 0;
           _secondsLeft = totalMs / 1000;
         });
       }
@@ -294,10 +289,8 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
       });
       final rawPath = await io.tempWavPath(
           'attempt_${DateTime.now().millisecondsSinceEpoch}');
-      final stopped = await io.recordWav(rawPath, Duration(milliseconds: totalMs),
-          onPitch: (hz) {
-        if (alive()) setState(() => _livePitch = hz);
-      });
+      final stopped =
+          await io.recordWav(rawPath, Duration(milliseconds: totalMs));
       _progressTimer?.cancel();
       await _ampSub?.cancel();
       _ampSub = null;
@@ -990,11 +983,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               target: match.targetWave,
               attempt: _paddedLevels(match),
               height: 64),
-            PitchMeter(
-              targetHz:
-                  PitchMeter.targetOf(match.challenge?.pitchMap ?? const []),
-              liveHz: match.myLivePitch ?? 0,
-            ),
           ],
         ),
       TurnPhase.listening => Column(
@@ -1154,7 +1142,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen> {
               scoring: _scoring,
               wave: _wave,
               live: _live,
-              livePitch: _livePitch,
             ),
       MatchStage.reveal => _Reveal(
           game: game,
@@ -1360,9 +1347,6 @@ class _TurnStage extends StatelessWidget {
   final List<double> wave;
   final List<double> live;
 
-  /// Live mic pitch while recording — 0 hides the needle.
-  final double livePitch;
-
   const _TurnStage({
     required this.game,
     required this.status,
@@ -1372,7 +1356,6 @@ class _TurnStage extends StatelessWidget {
     required this.scoring,
     required this.wave,
     required this.live,
-    required this.livePitch,
   });
 
   @override
@@ -1409,11 +1392,6 @@ class _TurnStage extends StatelessWidget {
                 style: TextStyle(color: StageBlack.muted, fontSize: 18)),
             SizedBox(height: 16),
             OverlayWaves(target: wave, attempt: trace, height: 64),
-            PitchMeter(
-              targetHz:
-                  PitchMeter.targetOf(game.challenge?.pitchMap ?? const []),
-              liveHz: livePitch,
-            ),
           ],
         ),
       TurnPhase.listening => Column(

@@ -941,7 +941,6 @@ class HostEngine {
       onPhase: (p) => _match.setMyPhase(p),
       onCountdown: (n) => _match.setCountdown(n),
       onLevel: (l) => _match.pushLevel(l),
-      onPitch: (hz) => _match.setLivePitch(hz),
     );
     _match.setMyResult(result.score, '', result.melody, result.rhythm,
         note: result.note);
